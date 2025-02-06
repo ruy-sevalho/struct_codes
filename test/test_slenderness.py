@@ -61,7 +61,7 @@ def test_slenderness_calc_memory(
     section: Section_2016,
     expected_slenderness_calc_memory: DoublySymmetricSlendernessCalcMemory,
 ):
-    slenderness_calc_memory = section.slenderness_2016_calc_memory
+    slenderness_calc_memory = section.slenderness_calc_memory_2016
     assert asdict(slenderness_calc_memory) == approx(
         asdict(expected_slenderness_calc_memory)
     )

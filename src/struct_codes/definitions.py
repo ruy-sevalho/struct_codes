@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Protocol
 
+from struct_codes.criteria import DesignType
 from struct_codes.units import Quantity
 
 
@@ -10,8 +11,10 @@ class Section_2016(Protocol):
         pass
 
     @property
-    def slenderness_2016_calc_memory(self):
+    def slenderness_calc_memory_2016(self):
         pass
+
+    def tension_calc_memory_2016(self, design_type: DesignType): ...
 
 
 class Geo(Protocol):
@@ -37,3 +40,8 @@ class SectionType(str, Enum):
 class ConstructionType(str, Enum):
     ROLLED = "ROLLED"
     BUILT_UP = "BUILT_UP"
+
+
+class Connection(Protocol):
+    @property
+    def area_reduction(self) -> Quantity: ...

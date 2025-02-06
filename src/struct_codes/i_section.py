@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 
-from struct_codes.definitions import ConstructionType, Section_2016, SectionType
+from struct_codes.criteria import DesignType, calculate_design_strength
+from struct_codes.definitions import (
+    Connection,
+    ConstructionType,
+    Section_2016,
+    SectionType,
+)
 from struct_codes.materials import Material
 from struct_codes.slenderness import (
     AxialSlendernessCalcMemory,
@@ -276,17 +282,95 @@ class DoublySymmetricSlendernessCalculation2016:
 
 
 @dataclass
+class TensionCalculationMemory:
+    net_area: Quantity
+    gross_area: Quantity
+    shear_lag_factor: float
+    net_effective_area: Quantity
+    yield_stress: Quantity
+    ultimate_stress: Quantity
+    nominal_yielding_strength: Quantity
+    nominal_ultimate_strength: Quantity
+    yielding_strength: Quantity
+    ultimate_strength: Quantity
+    design_strength: Quantity
+    design_type: DesignType
+
+
+@dataclass
+class TensionCalculation2016:
+    """CHAPTER D DESIGN OF MEMBERS FOR TENSION"""
+
+    net_area: Quantity
+    gross_area: Quantity
+    yield_stress: Quantity
+    ultimate_stress: Quantity
+    shear_lag_factor: float = 1.0
+    design_type: DesignType = DesignType.ASD
+
+    @property
+    def strength(self):
+        return min(self.yielding_strength, self.ultimate_strength)
+
+    @property
+    def nominal_yielding_strength(self):
+        return self.yield_stress * self.gross_area
+
+    @property
+    def nominal_ultimate_strength(self):
+        return self.net_effective_area * self.ultimate_stress
+
+    @property
+    def net_effective_area(self):
+        return self.net_area * self.shear_lag_factor
+
+    @property
+    def yielding_strength(self):
+        return calculate_design_strength(
+            nominal_strength=self.nominal_yielding_strength,
+            design_type=self.design_type,
+        )
+
+    @property
+    def ultimate_strength(self):
+        factor_table = {DesignType.ASD: 2.0, DesignType.LRFD: 0.75}
+        return calculate_design_strength(
+            nominal_strength=self.nominal_ultimate_strength,
+            design_type=self.design_type,
+            factor=factor_table[self.design_type],
+        )
+
+    @property
+    def calculation_memory(self):
+        return TensionCalculationMemory(
+            net_area=self.net_area,
+            gross_area=self.gross_area,
+            net_effective_area=self.net_effective_area,
+            shear_lag_factor=self.shear_lag_factor,
+            yield_stress=self.yield_stress,
+            ultimate_stress=self.ultimate_stress,
+            nominal_yielding_strength=self.nominal_yielding_strength,
+            nominal_ultimate_strength=self.nominal_ultimate_strength,
+            yielding_strength=self.yielding_strength,
+            ultimate_strength=self.ultimate_strength,
+            design_strength=self.strength,
+            design_type=self.design_type,
+        )
+
+
+@dataclass
 class DoublySymmetricI:
     geometry: DoublySymmetricIGeo
     material: Material
-    construction: ConstructionType
+    construction: ConstructionType = ConstructionType.ROLLED
+    connection: Connection | None = None
 
     @property
     def slenderness_2016(self) -> DoublySymmetricSlenderness:
         return self._slenderness_2016.slenderness
 
     @property
-    def slenderness_2016_calc_memory(self) -> DoublySymmetricSlendernessCalcMemory:
+    def slenderness_calc_memory_2016(self) -> DoublySymmetricSlendernessCalcMemory:
         return self._slenderness_2016.calc_memory
 
     @property
@@ -298,3 +382,26 @@ class DoublySymmetricI:
             modulus_linear=self.material.modulus_linear,
             yield_strength=self.material.yield_strength,
         )
+
+    @property
+    def _net_area(self) -> Quantity:
+        reduction = 0
+        if self.connection:
+            reduction = self.connection.area_reduction
+        return self.geometry.A - reduction
+
+    def _tension_calculation_2016(self, design_type: DesignType):
+        return TensionCalculation2016(
+            net_area=self._net_area,
+            gross_area=self.geometry.A,
+            yield_stress=self.material.yield_strength,
+            ultimate_stress=self.material.ultimate_strength,
+            design_type=design_type,
+        )
+
+    def tension_calc_memory_2016(
+        self, design_type: DesignType = DesignType.ASD
+    ) -> TensionCalculationMemory:
+        return self._tension_calculation_2016(
+            design_type=design_type
+        ).calculation_memory

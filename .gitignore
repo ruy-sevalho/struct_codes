@@ -11,3 +11,5 @@ wheels/
 
 # vscode files
 .vscode/
+src/struct_codes/~$aisc-shapes-database-v16.0.xlsx
+test/~$Manual Checks.xlsx
