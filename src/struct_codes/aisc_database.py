@@ -5,7 +5,7 @@ from typing import Any
 
 import pandas as pd
 
-from struct_codes.definitions import ConstructionType, Section_2016, SectionType
+from struct_codes.definitions import ConstructionType, Section, SectionType
 from struct_codes.i_section import DoublySymmetricI, DoublySymmetricIGeo
 from struct_codes.materials import Material
 from struct_codes.units import Quantity, kilogram, meter, millimeter
@@ -278,7 +278,7 @@ section_table = {
 
 def create_aisc_section(
     section_name: str, material: Material, construction: ConstructionType
-) -> Section_2016:
+) -> Section:
     section_dict = AISC_Sections[section_name]
     section_type = section_dict["type"]
     section_class, section_geo = section_table[section_type]

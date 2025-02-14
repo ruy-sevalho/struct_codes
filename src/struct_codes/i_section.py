@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 
-from struct_codes.criteria import DesignType, calculate_design_strength
+from struct_codes._compression import FlexuralBucklingStrengthCalculation
+from struct_codes._tension import TensionCalculation2016, TensionCalculationMemory
+from struct_codes.criteria import DesignType
 from struct_codes.definitions import (
+    CalculationCollection,
     Connection,
     ConstructionType,
-    Section_2016,
+    Section,
     SectionType,
 )
 from struct_codes.materials import Material
@@ -88,8 +91,6 @@ class DoublySymmetricSlenderness:
 
 @dataclass
 class DoublySymmetricSlendernessCalcMemory:
-    web_ratio: float
-    flange_ratio: float
     web_axial_slender_limit: float
     web_axial_slenderness: Slenderness
     web_flexural_compact_limit: float
@@ -263,8 +264,6 @@ class DoublySymmetricSlendernessCalculation2016:
     @property
     def calc_memory(self) -> DoublySymmetricSlendernessCalcMemory:
         return DoublySymmetricSlendernessCalcMemory(
-            web_ratio=self.web_ratio,
-            flange_ratio=self.flange_ratio,
             web_axial_slender_limit=self._web_axial_slender_limit,
             web_axial_slenderness=self._web_axial_slenderness,
             web_flexural_slender_limit=self._web_flexural_slender_limit,
@@ -282,80 +281,10 @@ class DoublySymmetricSlendernessCalculation2016:
 
 
 @dataclass
-class TensionCalculationMemory:
-    net_area: Quantity
-    gross_area: Quantity
-    shear_lag_factor: float
-    net_effective_area: Quantity
-    yield_stress: Quantity
-    ultimate_stress: Quantity
-    nominal_yielding_strength: Quantity
-    nominal_ultimate_strength: Quantity
-    yielding_strength: Quantity
-    ultimate_strength: Quantity
-    design_strength: Quantity
-    design_type: DesignType
-
-
-@dataclass
-class TensionCalculation2016:
-    """CHAPTER D DESIGN OF MEMBERS FOR TENSION"""
-
-    net_area: Quantity
-    gross_area: Quantity
-    yield_stress: Quantity
-    ultimate_stress: Quantity
-    shear_lag_factor: float = 1.0
-    design_type: DesignType = DesignType.ASD
-
-    @property
-    def strength(self):
-        return min(self.yielding_strength, self.ultimate_strength)
-
-    @property
-    def nominal_yielding_strength(self):
-        return self.yield_stress * self.gross_area
-
-    @property
-    def nominal_ultimate_strength(self):
-        return self.net_effective_area * self.ultimate_stress
-
-    @property
-    def net_effective_area(self):
-        return self.net_area * self.shear_lag_factor
-
-    @property
-    def yielding_strength(self):
-        return calculate_design_strength(
-            nominal_strength=self.nominal_yielding_strength,
-            design_type=self.design_type,
-        )
-
-    @property
-    def ultimate_strength(self):
-        factor_table = {DesignType.ASD: 2.0, DesignType.LRFD: 0.75}
-        return calculate_design_strength(
-            nominal_strength=self.nominal_ultimate_strength,
-            design_type=self.design_type,
-            factor=factor_table[self.design_type],
-        )
-
-    @property
-    def calculation_memory(self):
-        return TensionCalculationMemory(
-            net_area=self.net_area,
-            gross_area=self.gross_area,
-            net_effective_area=self.net_effective_area,
-            shear_lag_factor=self.shear_lag_factor,
-            yield_stress=self.yield_stress,
-            ultimate_stress=self.ultimate_stress,
-            nominal_yielding_strength=self.nominal_yielding_strength,
-            nominal_ultimate_strength=self.nominal_ultimate_strength,
-            yielding_strength=self.yielding_strength,
-            ultimate_strength=self.ultimate_strength,
-            design_strength=self.strength,
-            design_type=self.design_type,
-        )
+class CompressionCalculation(CalculationCollection):
+    flexural_buckling_major_axis: FlexuralBucklingStrengthCalculation = None
+    flexural_buckling_minor_axis: FlexuralBucklingStrengthCalculation = None
+    torsional_buckling: FlexuralBucklingStrengthCalculation = None
 
 
 @dataclass
@@ -364,6 +293,31 @@ class DoublySymmetricI:
     material: Material
     construction: ConstructionType = ConstructionType.ROLLED
     connection: Connection | None = None
+
+    def compression(
+        self,
+        length_major_axis: Quantity,
+        factor_k_major_axis: float = 1.0,
+        length_minor_axis: Quantity = None,
+        factor_k_minor_axis: float = 1.0,
+        length_torsion: Quantity = None,
+        factor_k_torsion: float = 1.0,
+        design_type: DesignType = DesignType.ASD,
+        required_strength: Quantity | None = None,
+    ):
+        return CompressionCalculation(
+            flexural_buckling_major_axis=FlexuralBucklingStrengthCalculation(
+                length=length_major_axis,
+                factor_k=factor_k_major_axis,
+                yield_stress=self.material.yield_strength,
+                modulus_linear=self.material.modulus_linear,
+                gross_area=self.geometry.A,
+                radius_of_gyration=self.geometry.rx,
+                design_type=design_type,
+            ),
+            flexural_buckling_minor_axis=None,
+            torsional_buckling=None,
+        )
 
     @property
     def slenderness_2016(self) -> DoublySymmetricSlenderness:
@@ -405,3 +359,8 @@ class DoublySymmetricI:
         return self._tension_calculation_2016(
             design_type=design_type
         ).calculation_memory
+
+    def tension(
+        self, design_type: DesignType = DesignType.ASD
+    ) -> TensionCalculation2016:
+        return self._tension_calculation_2016(design_type=design_type)
