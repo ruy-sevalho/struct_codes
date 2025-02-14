@@ -14,7 +14,7 @@ from struct_codes.units import kilonewton
         (10 * kilonewton, DesignType.ASD, 2, 5.0 * kilonewton),
     ],
 )
-def test_design_strenght(
+def test_design_strength(
     nominal_strength: Quantity,
     design_type: DesignType,
     factor: float | None,
