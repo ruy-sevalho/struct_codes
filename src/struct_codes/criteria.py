@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 
@@ -35,5 +36,21 @@ def calculate_design_strength(
 
 
 @dataclass
-class Strengths:
-    strengths: tuple[float,]
+class StrengthMixin(ABC):
+    design_type: DesignType
+
+    asd_factor = 1.67
+    lrfd_factor = 0.9
+
+    @property
+    @abstractmethod
+    def nominal_strength(self) -> Quantity: ...
+
+    @property
+    def design_strength(self) -> Quantity:
+        table = {DesignType.ASD: self.asd_factor, DesignType.LRFD: self.lrfd_factor}
+        return calculate_design_strength(
+            nominal_strength=self.nominal_strength,
+            design_type=self.design_type,
+            factor=table[self.design_type],
+        )

@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
-from struct_codes._compression import FlexuralBucklingStrengthCalculation
+from struct_codes._compression import (
+    FlexuralBucklingStrengthCalculation,
+    TorsionalBucklingDoublySymmetricStrengthCalculation,
+)
 from struct_codes._tension import TensionCalculation2016, TensionCalculationMemory
 from struct_codes.criteria import DesignType
 from struct_codes.materials import Material
@@ -321,7 +324,19 @@ class DoublySymmetricI:
                 radius_of_gyration=self.geometry.ry,
                 design_type=design_type,
             ),
-            torsional_buckling=None,
+            torsional_buckling=TorsionalBucklingDoublySymmetricStrengthCalculation(
+                design_type=design_type,
+                yield_stress=self.material.yield_strength,
+                gross_area=self.geometry.A,
+                length=length_torsion or length_major_axis,
+                factor_k=factor_k_torsion or factor_k_major_axis,
+                modulus_linear=self.material.modulus_linear,
+                modulus_shear=self.material.modulus_shear,
+                major_axis_inertia=self.geometry.Ix,
+                minor_axis_inertia=self.geometry.Iy,
+                torsional_constant=self.geometry.J,
+                warping_constant=self.geometry.Cw,
+            ),
         )
 
     @property
@@ -357,13 +372,6 @@ class DoublySymmetricI:
             ultimate_stress=self.material.ultimate_strength,
             design_type=design_type,
         )
-
-    def tension_calc_memory_2016(
-        self, design_type: DesignType = DesignType.ASD
-    ) -> TensionCalculationMemory:
-        return self._tension_calculation_2016(
-            design_type=design_type
-        ).calculation_memory
 
     def tension(
         self, design_type: DesignType = DesignType.ASD

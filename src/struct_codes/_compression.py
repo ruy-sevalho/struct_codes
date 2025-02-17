@@ -1,9 +1,10 @@
 import math
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from pint import Quantity
 
-from struct_codes.criteria import DesignType, calculate_design_strength
+from struct_codes.criteria import DesignType, StrengthMixin, calculate_design_strength
 
 
 @dataclass
@@ -51,7 +52,7 @@ def elastic_flexural_buckling_stress(
     return math.pi**2 * modulus_linear / member_slenderness_ratio**2
 
 
-# (E4-4)
+# (E4-2)
 def elastic_torsional_buckling_stress_doubly_symmetric_member(
     modulus_linear: Quantity,
     modulus_shear: Quantity,
@@ -76,10 +77,14 @@ def doubly_symmetric_i_warping_constant(
 
 
 @dataclass
-class BucklingStrengthCalculation:
+class BucklingStrengthCalculationMixin(StrengthMixin):
     yield_stress: Quantity
     gross_area: Quantity
-    elastic_buckling_stress: Quantity
+
+    @property
+    @abstractmethod
+    def elastic_buckling_stress(self) -> Quantity:
+        pass
 
     @property
     def critical_stress(self):
@@ -95,10 +100,18 @@ class BucklingStrengthCalculation:
             sectional_area=self.gross_area,
         )
 
+    @property
+    def calculation_memory(self):
+        return BucklingStrengthCalculationMemory(
+            elastic_buckling_stress=self.elastic_buckling_stress,
+            critical_stress=self.critical_stress,
+            nominal_strength=self.nominal_strength,
+            design_strength=self.design_strength,
+        )
+
 
 @dataclass
-class FlexuralBucklingStrengthCalculationMemory:
-    beam_slenderness: float
+class BucklingStrengthCalculationMemory:
     elastic_buckling_stress: Quantity
     critical_stress: Quantity
     nominal_strength: Quantity
@@ -106,7 +119,7 @@ class FlexuralBucklingStrengthCalculationMemory:
 
 
 @dataclass
-class FlexuralBucklingStrengthCalculation:
+class FlexuralBucklingStrengthCalculation(BucklingStrengthCalculationMixin):
     length: Quantity
     factor_k: Quantity
     yield_stress: Quantity
@@ -131,18 +144,6 @@ class FlexuralBucklingStrengthCalculation:
         )
 
     @property
-    def buckling_strength_calculation(self):
-        return BucklingStrengthCalculation(
-            yield_stress=self.yield_stress,
-            gross_area=self.gross_area,
-            elastic_buckling_stress=self.elastic_buckling_stress,
-        )
-
-    @property
-    def nominal_strength(self) -> Quantity:
-        return self.buckling_strength_calculation.nominal_strength
-
-    @property
     def design_strength(self) -> Quantity:
         return calculate_design_strength(
             nominal_strength=self.nominal_strength,
@@ -151,10 +152,39 @@ class FlexuralBucklingStrengthCalculation:
 
     @property
     def calculation_memory(self):
-        return FlexuralBucklingStrengthCalculationMemory(
-            beam_slenderness=self.beam_slenderness,
+        return BucklingStrengthCalculationMemory(
             elastic_buckling_stress=self.elastic_buckling_stress,
-            critical_stress=self.buckling_strength_calculation.critical_stress,
-            nominal_strength=self.buckling_strength_calculation.nominal_strength,
+            critical_stress=self.critical_stress,
+            nominal_strength=self.nominal_strength,
             design_strength=self.design_strength,
+        )
+
+
+@dataclass
+class TorsionalBucklingDoublySymmetricStrengthCalculation(
+    BucklingStrengthCalculationMixin
+):
+    length: Quantity
+    factor_k: Quantity
+    yield_stress: Quantity
+    modulus_linear: Quantity
+    modulus_shear: Quantity
+    gross_area: Quantity
+    major_axis_inertia: Quantity
+    minor_axis_inertia: Quantity
+    torsional_constant: Quantity
+    warping_constant: Quantity
+    design_type: DesignType
+
+    @property
+    def elastic_buckling_stress(self):
+        return elastic_torsional_buckling_stress_doubly_symmetric_member(
+            modulus_linear=self.modulus_linear,
+            modulus_shear=self.modulus_shear,
+            factor_k=self.factor_k,
+            length=self.length,
+            torsional_constant=self.torsional_constant,
+            major_axis_inertia=self.major_axis_inertia,
+            minor_axis_inertia=self.minor_axis_inertia,
+            warping_constant=self.warping_constant,
         )
