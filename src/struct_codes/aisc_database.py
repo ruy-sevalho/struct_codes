@@ -5,9 +5,9 @@ from typing import Any
 
 import pandas as pd
 
-from struct_codes.definitions import ConstructionType, Section, SectionType
 from struct_codes.i_section import DoublySymmetricI, DoublySymmetricIGeo
 from struct_codes.materials import Material
+from struct_codes.sections import ConstructionType, Section, SectionType
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
 DIRECTORY_PATH = Path(getcwd())

@@ -11,10 +11,10 @@ from struct_codes._compression import (
 )
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType
-from struct_codes.definitions import ConstructionType, Section
 from struct_codes.i_section import DoublySymmetricI
 from struct_codes.materials import steel355MPa
-from struct_codes.units import kilonewton, megapascal, meter
+from struct_codes.sections import ConstructionType, Section
+from struct_codes.units import kilonewton, megapascal, meter, newton
 
 
 @mark.parametrize(
@@ -25,16 +25,16 @@ from struct_codes.units import kilonewton, megapascal, meter
             BeamCompressionParam(length_major_axis=1 * meter),
             DesignType.ASD,
             FlexuralBucklingStrengthCalculationMemory(
-                beam_slenderness=1,
-                elastic_buckling_stress=1 * megapascal,
-                critical_stress=1 * megapascal,
-                nominal_strength=1 * megapascal,
-                design_strength=1 * megapascal,
+                beam_slenderness=15.38461538,
+                elastic_buckling_stress=8339.815719 * megapascal,
+                critical_stress=348.7311926 * megapascal,
+                nominal_strength=997371.211 * newton,
+                design_strength=597228.27 * newton,
             ),
         ),
     ],
 )
-def test_w_section_flexural_buckling_calc_memory_2016(
+def test_w_section_flexural_buckling_major_axis_calc_memory_2016(
     section: DoublySymmetricI,
     beam_compression_param: BeamCompressionParam,
     design_type: DesignType,

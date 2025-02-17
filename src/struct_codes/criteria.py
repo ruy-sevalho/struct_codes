@@ -10,6 +10,7 @@ class StrengthType(str, Enum):
     FLEXURAL_BUCKLING_MINOR_AXIS = "flexural_buckling_minor_axis"
     TORSIONAL_BUCKLING = "torsional_buckling"
     YIELD = "yield"
+    ULTIMATE = "ultimate"
     LATERAL_TORSIONAL_BUCKLING = "lateral_torsional_buckling"
     COMPRESSION_FLANGE_LOCAL_BUCKLING = "compression_flange_local_buckling"
     COMPRESSION_FLANGE_YIELDING = "compression_flange_yielding"

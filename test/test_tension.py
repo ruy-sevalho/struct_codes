@@ -6,8 +6,8 @@ from unit_processing import simplify_dataclass
 from struct_codes._tension import TensionCalculationMemory
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType
-from struct_codes.definitions import ConstructionType, Section
 from struct_codes.materials import steel355MPa
+from struct_codes.sections import ConstructionType, Section
 from struct_codes.units import centemiter, kilonewton, megapascal, millimeter, newton
 
 

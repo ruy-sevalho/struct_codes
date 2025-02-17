@@ -130,3 +130,12 @@ class FlexuralSlendernessCalcMemory:
     compact_non_compact_limit: float
     non_compact_slender_limit: float
     value: Slenderness
+
+
+@dataclass
+class SlendernessTypes(str, Enum):
+    WEB_AXIAL = "web_axial"
+    WEB_FLEXURE_MAKOR_AXIS = "web_flexure_major_axis"
+    FLANGE_AXIAL = "flange_axial"
+    FLANGE_FLEXURE_MAJOR_AXIS = "flange_flexure_major_axis"
+    FLANGE_FLEXURE_MINOR_AXIS = "flange_flexure_minor_axis"

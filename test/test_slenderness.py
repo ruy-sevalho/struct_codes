@@ -3,12 +3,12 @@ from dataclasses import asdict
 from pytest import approx, mark
 
 from struct_codes.aisc_database import create_aisc_section
-from struct_codes.definitions import ConstructionType, Section
 from struct_codes.i_section import (
     DoublySymmetricSlenderness,
     DoublySymmetricSlendernessCalcMemory,
 )
 from struct_codes.materials import steel355MPa
+from struct_codes.sections import ConstructionType, Section
 from struct_codes.slenderness import Slenderness
 
 

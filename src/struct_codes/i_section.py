@@ -3,14 +3,14 @@ from dataclasses import dataclass
 from struct_codes._compression import FlexuralBucklingStrengthCalculation
 from struct_codes._tension import TensionCalculation2016, TensionCalculationMemory
 from struct_codes.criteria import DesignType
-from struct_codes.definitions import (
+from struct_codes.materials import Material
+from struct_codes.sections import (
     CalculationCollection,
     Connection,
     ConstructionType,
     Section,
     SectionType,
 )
-from struct_codes.materials import Material
 from struct_codes.slenderness import (
     AxialSlendernessCalcMemory,
     FlexuralSlendernessCalcMemory,
