@@ -47,3 +47,35 @@ def test_w_section_flexural_buckling_major_axis_calc_memory_2016(
     assert simplify_dataclass(calc_memory) == approx(
         simplify_dataclass(expected_flexural_buckling_calc_memory)
     )
+
+
+@mark.parametrize(
+    "section, beam_compression_param, design_type, expected_flexural_buckling_calc_memory",
+    [
+        (
+            create_aisc_section("W6X15", steel355MPa, ConstructionType.ROLLED),
+            BeamCompressionParam(length_major_axis=1 * meter),
+            DesignType.ASD,
+            FlexuralBucklingStrengthCalculationMemory(
+                beam_slenderness=27.17391304,
+                elastic_buckling_stress=2673.162613 * megapascal,
+                critical_stress=335.8060215 * megapascal,
+                nominal_strength=960405.2214 * newton,
+                design_strength=575092.947 * newton,
+            ),
+        ),
+    ],
+)
+def test_w_section_flexural_buckling_minor_axis_calc_memory_2016(
+    section: DoublySymmetricI,
+    beam_compression_param: BeamCompressionParam,
+    design_type: DesignType,
+    expected_flexural_buckling_calc_memory,
+):
+    beam = asdict(beam_compression_param)
+    calc_memory = section.compression(
+        **beam, design_type=design_type
+    ).flexural_buckling_minor_axis.calculation_memory
+    assert simplify_dataclass(calc_memory) == approx(
+        simplify_dataclass(expected_flexural_buckling_calc_memory)
+    )

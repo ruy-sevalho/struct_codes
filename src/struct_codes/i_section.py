@@ -8,12 +8,9 @@ from struct_codes.sections import (
     CalculationCollection,
     Connection,
     ConstructionType,
-    Section,
     SectionType,
 )
 from struct_codes.slenderness import (
-    AxialSlendernessCalcMemory,
-    FlexuralSlendernessCalcMemory,
     Slenderness,
     axial_built_up_flanges_limit_ratio,
     axial_doubly_symmetric_web_limit,
@@ -28,7 +25,7 @@ from struct_codes.slenderness import (
     flexural_slenderness_per_element,
     kc_coefficient,
 )
-from struct_codes.units import Quantity, millimeter
+from struct_codes.units import Quantity
 
 
 @dataclass
@@ -315,7 +312,15 @@ class DoublySymmetricI:
                 radius_of_gyration=self.geometry.rx,
                 design_type=design_type,
             ),
-            flexural_buckling_minor_axis=None,
+            flexural_buckling_minor_axis=FlexuralBucklingStrengthCalculation(
+                length=length_minor_axis or length_major_axis,
+                factor_k=factor_k_minor_axis or factor_k_major_axis,
+                yield_stress=self.material.yield_strength,
+                modulus_linear=self.material.modulus_linear,
+                gross_area=self.geometry.A,
+                radius_of_gyration=self.geometry.ry,
+                design_type=design_type,
+            ),
             torsional_buckling=None,
         )
 
