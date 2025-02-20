@@ -1,10 +1,7 @@
-from dataclasses import asdict
-
 from pytest import approx, mark
 from unit_processing import simplify_dataclass
 
 from struct_codes._tension import (
-    TensionCalculationMemory,
     TensionUltimateCalculationMemory,
     TensionYieldCalculationMemory,
 )
