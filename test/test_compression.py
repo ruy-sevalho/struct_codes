@@ -8,7 +8,7 @@ from struct_codes._compression import (
     BucklingStrengthCalculationMemory,
 )
 from struct_codes.aisc_database import create_aisc_section
-from struct_codes.criteria import DesignType
+from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.i_section import DoublySymmetricI
 from struct_codes.materials import steel355MPa
 from struct_codes.sections import ConstructionType
@@ -38,9 +38,11 @@ def test_w_section_flexural_buckling_major_axis_calc_memory_2016(
     expected_flexural_buckling_calc_memory: BucklingStrengthCalculationMemory,
 ):
     beam = asdict(beam_compression_param)
-    calc_memory = section.compression(
-        **beam, design_type=design_type
-    ).flexural_buckling_major_axis.calculation_memory
+    calc_memory = (
+        section.compression(**beam, design_type=design_type)
+        .criteria[StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS]
+        .calculation_memory
+    )
     assert simplify_dataclass(calc_memory) == approx(
         simplify_dataclass(expected_flexural_buckling_calc_memory)
     )
@@ -69,9 +71,11 @@ def test_w_section_flexural_buckling_minor_axis_calc_memory_2016(
     expected_flexural_buckling_calc_memory: BucklingStrengthCalculationMemory,
 ):
     beam = asdict(beam_compression_param)
-    calc_memory = section.compression(
-        **beam, design_type=design_type
-    ).flexural_buckling_minor_axis.calculation_memory
+    calc_memory = (
+        section.compression(**beam, design_type=design_type)
+        .criteria[StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS]
+        .calculation_memory
+    )
     assert simplify_dataclass(calc_memory) == approx(
         simplify_dataclass(expected_flexural_buckling_calc_memory)
     )
@@ -100,9 +104,11 @@ def test_w_section_torsional_calc_memory_2016(
     expected_torsional_buckling_calc_memory: BucklingStrengthCalculationMemory,
 ):
     beam = asdict(beam_compression_param)
-    calc_memory = section.compression(
-        **beam, design_type=design_type
-    ).torsional_buckling.calculation_memory
+    calc_memory = (
+        section.compression(**beam, design_type=design_type)
+        .criteria[StrengthType.TORSIONAL_BUCKLING]
+        .calculation_memory
+    )
     assert simplify_dataclass(calc_memory) == approx(
         simplify_dataclass(expected_torsional_buckling_calc_memory)
     )

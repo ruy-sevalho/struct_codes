@@ -311,38 +311,40 @@ class DoublySymmetricI:
         design_type: DesignType = DesignType.ASD,
         required_strength: Quantity | None = None,
     ):
-        return CompressionCalculation(
-            flexural_buckling_major_axis=FlexuralBucklingStrengthCalculation(
-                length=length_major_axis,
-                factor_k=factor_k_major_axis,
-                yield_stress=self.material.yield_strength,
-                modulus_linear=self.material.modulus_linear,
-                gross_area=self.geometry.A,
-                radius_of_gyration=self.geometry.rx,
-                design_type=design_type,
-            ),
-            flexural_buckling_minor_axis=FlexuralBucklingStrengthCalculation(
-                length=length_minor_axis or length_major_axis,
-                factor_k=factor_k_minor_axis or factor_k_major_axis,
-                yield_stress=self.material.yield_strength,
-                modulus_linear=self.material.modulus_linear,
-                gross_area=self.geometry.A,
-                radius_of_gyration=self.geometry.ry,
-                design_type=design_type,
-            ),
-            torsional_buckling=TorsionalBucklingDoublySymmetricStrengthCalculation(
-                design_type=design_type,
-                yield_stress=self.material.yield_strength,
-                gross_area=self.geometry.A,
-                length=length_torsion or length_major_axis,
-                factor_k=factor_k_torsion or factor_k_major_axis,
-                modulus_linear=self.material.modulus_linear,
-                modulus_shear=self.material.modulus_shear,
-                major_axis_inertia=self.geometry.Ix,
-                minor_axis_inertia=self.geometry.Iy,
-                torsional_constant=self.geometry.J,
-                warping_constant=self.geometry.Cw,
-            ),
+        return LoadStrengthCalculation(
+            criteria={
+                StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS: FlexuralBucklingStrengthCalculation(
+                    length=length_major_axis,
+                    factor_k=factor_k_major_axis,
+                    yield_stress=self.material.yield_strength,
+                    modulus_linear=self.material.modulus_linear,
+                    gross_area=self.geometry.A,
+                    radius_of_gyration=self.geometry.rx,
+                    design_type=design_type,
+                ),
+                StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS: FlexuralBucklingStrengthCalculation(
+                    length=length_minor_axis or length_major_axis,
+                    factor_k=factor_k_minor_axis or factor_k_major_axis,
+                    yield_stress=self.material.yield_strength,
+                    modulus_linear=self.material.modulus_linear,
+                    gross_area=self.geometry.A,
+                    radius_of_gyration=self.geometry.ry,
+                    design_type=design_type,
+                ),
+                StrengthType.TORSIONAL_BUCKLING: TorsionalBucklingDoublySymmetricStrengthCalculation(
+                    design_type=design_type,
+                    yield_stress=self.material.yield_strength,
+                    gross_area=self.geometry.A,
+                    length=length_torsion or length_major_axis,
+                    factor_k=factor_k_torsion or factor_k_major_axis,
+                    modulus_linear=self.material.modulus_linear,
+                    modulus_shear=self.material.modulus_shear,
+                    major_axis_inertia=self.geometry.Ix,
+                    minor_axis_inertia=self.geometry.Iy,
+                    torsional_constant=self.geometry.J,
+                    warping_constant=self.geometry.Cw,
+                ),
+            }
         )
 
     @property
