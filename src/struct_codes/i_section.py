@@ -5,9 +5,9 @@ from struct_codes._compression import (
     FlexuralBucklingStrengthCalculation,
     TorsionalBucklingDoublySymmetricStrengthCalculation,
 )
+from struct_codes._flexure import YieldingMomentCalculation
 from struct_codes._tension import (
     TensionCalculation2016,
-    TensionCalculationMemory,
     TesionUltimateCalculation,
     TesionYieldCalculation,
 )
@@ -425,3 +425,19 @@ class DoublySymmetricI:
         self, design_type: DesignType = DesignType.ASD
     ) -> LoadStrengthCalculation:
         return self._tension_2016(design_type=design_type)
+
+    def flexure_major_axis(
+        self,
+        length: Quantity = None,
+        lateral_torsional_buckling_modification_factor: float = 1.0,
+        design_type: DesignType = DesignType.ASD,
+    ) -> LoadStrengthCalculation:
+        return LoadStrengthCalculation(
+            criteria={
+                StrengthType.YIELD: YieldingMomentCalculation(
+                    plastic_section_modulus=self.geometry.Zx,
+                    yield_stress=self.material.yield_strength,
+                    design_type=design_type,
+                ),
+            }
+        )
