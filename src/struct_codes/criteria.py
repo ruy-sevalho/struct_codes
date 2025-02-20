@@ -35,7 +35,6 @@ def calculate_design_strength(
     return calc_function[design_type](nominal_strength, factor)
 
 
-@dataclass
 class StrengthMixin(ABC):
     design_type: DesignType
 

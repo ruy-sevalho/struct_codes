@@ -4,13 +4,19 @@ from struct_codes._compression import (
     FlexuralBucklingStrengthCalculation,
     TorsionalBucklingDoublySymmetricStrengthCalculation,
 )
-from struct_codes._tension import TensionCalculation2016, TensionCalculationMemory
-from struct_codes.criteria import DesignType
+from struct_codes._tension import (
+    TensionCalculation2016,
+    TensionCalculationMemory,
+    TesionUltimateCalculation,
+    TesionYieldCalculation,
+)
+from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.materials import Material
 from struct_codes.sections import (
     CalculationCollection,
     Connection,
     ConstructionType,
+    LoadStrengthCalculation,
     SectionType,
 )
 from struct_codes.slenderness import (
@@ -373,7 +379,27 @@ class DoublySymmetricI:
             design_type=design_type,
         )
 
+    def _tension_2016(self, design_type: DesignType):
+        shear_lag_factor = 1.0
+        if self.connection:
+            shear_lag_factor = self.connection.shear_lag_factor
+        return LoadStrengthCalculation(
+            criteria={
+                StrengthType.YIELD: TesionYieldCalculation(
+                    gross_area=self.geometry.A,
+                    yield_stress=self.material.yield_strength,
+                    design_type=design_type,
+                ),
+                StrengthType.ULTIMATE: TesionUltimateCalculation(
+                    net_area=self._net_area,
+                    ultimate_stress=self.material.ultimate_strength,
+                    shear_lag_factor=shear_lag_factor,
+                    design_type=design_type,
+                ),
+            }
+        )
+
     def tension(
         self, design_type: DesignType = DesignType.ASD
-    ) -> TensionCalculation2016:
-        return self._tension_calculation_2016(design_type=design_type)
+    ) -> LoadStrengthCalculation:
+        return self._tension_2016(design_type=design_type)

@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Protocol
@@ -16,7 +17,7 @@ class StrengthCalculation(Protocol):
     def desing_strength(self) -> Quantity: ...
 
     @property
-    def calc_memory(self) -> CalcMemory: ...
+    def calculation_memory(self) -> CalcMemory: ...
 
 
 @dataclass
@@ -38,6 +39,31 @@ def get_max_design_strength_tuple(collecion: CalculationCollection):
     d = {key: value.desing_strength for key, value in collecion.to_dict.items()}
     key = max(d, key=d.get)
     return d[key], key
+
+
+def _get_min_design_strength(
+    criteria: dict[StrengthType, StrengthCalculation],
+) -> tuple[Quantity, StrengthType]:
+    d = {key: value.desing_strength for key, value in criteria.items()}
+    key = min(d, d.get)
+    return d[key], key
+
+
+@dataclass
+class LoadStrengthCalculation:
+    criteria: dict[StrengthType, StrengthCalculation]
+
+    @property
+    def design_strength_tuple(self) -> Quantity:
+        return _get_min_design_strength(self.criteria)
+
+    @property
+    def design_strength(self) -> Quantity:
+        return self.design_strength_tuple[0]
+
+    @property
+    def design_strength_criterion(self) -> StrengthType:
+        return self.design_strength_tuple[1]
 
 
 class LoadCheck(Protocol):
@@ -64,7 +90,9 @@ class Section(Protocol):
     def slenderness_calc_memory_2016(self):
         pass
 
-    def tension(self, design_type: DesignType = DesignType.ASD) -> LoadCheck: ...
+    def tension(
+        self, design_type: DesignType = DesignType.ASD
+    ) -> LoadStrengthCalculation: ...
 
     def tension_calc_memory_2016(self, design_type: DesignType): ...
 
@@ -107,3 +135,6 @@ class ConstructionType(str, Enum):
 class Connection(Protocol):
     @property
     def area_reduction(self) -> Quantity: ...
+
+    @property
+    def shear_lag_factor(self) -> float: ...
