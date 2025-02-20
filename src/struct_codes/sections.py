@@ -80,23 +80,11 @@ class LoadCheck(Protocol):
 
 
 class Section(Protocol):
-    def slenderness(self): ...
-
-    @property
-    def slenderness_2016(self):
-        pass
-
-    @property
-    def slenderness_calc_memory_2016(self):
-        pass
-
     def tension(
         self, design_type: DesignType = DesignType.ASD
     ) -> LoadStrengthCalculation: ...
 
-    def tension_calc_memory_2016(self, design_type: DesignType): ...
-
-    def compression_calc_memory_2016(
+    def compression(
         length_major_axis: Quantity,
         factor_k_major_axis: float = 1.0,
         length_minor_axis: Quantity = None,
@@ -104,6 +92,7 @@ class Section(Protocol):
         length_torsion: Quantity = None,
         factor_k_torsion: float = 1.0,
         design_type: DesignType = DesignType.ASD,
+        required_strength: Quantity = None,
     ) -> LoadCheck: ...
 
 

@@ -4,11 +4,12 @@ from pytest import approx, mark
 
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.i_section import (
+    DoublySymmetricI,
     DoublySymmetricSlenderness,
     DoublySymmetricSlendernessCalcMemory,
 )
 from struct_codes.materials import steel355MPa
-from struct_codes.sections import ConstructionType, Section
+from struct_codes.sections import ConstructionType
 from struct_codes.slenderness import Slenderness
 
 
@@ -27,7 +28,7 @@ from struct_codes.slenderness import Slenderness
         )
     ],
 )
-def test_slenderness(section: Section, expected_slenderness):
+def test_slenderness(section: DoublySymmetricI, expected_slenderness):
     slenderness = section.slenderness_2016
     assert slenderness == expected_slenderness
 
@@ -56,7 +57,7 @@ def test_slenderness(section: Section, expected_slenderness):
     ],
 )
 def test_slenderness_calc_memory(
-    section: Section,
+    section: DoublySymmetricI,
     expected_slenderness_calc_memory: DoublySymmetricSlendernessCalcMemory,
 ):
     slenderness_calc_memory = section.slenderness_calc_memory_2016
