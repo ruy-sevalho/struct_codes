@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from struct_codes._compression import (
+    BucklingStrengthCalculationMixin,
     FlexuralBucklingStrengthCalculation,
     TorsionalBucklingDoublySymmetricStrengthCalculation,
 )
@@ -13,7 +14,6 @@ from struct_codes._tension import (
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.materials import Material
 from struct_codes.sections import (
-    CalculationCollection,
     Connection,
     ConstructionType,
     LoadStrengthCalculation,
@@ -286,11 +286,15 @@ class DoublySymmetricSlendernessCalculation2016:
         )
 
 
-@dataclass
-class CompressionCalculation(CalculationCollection):
-    flexural_buckling_major_axis: FlexuralBucklingStrengthCalculation = None
-    flexural_buckling_minor_axis: FlexuralBucklingStrengthCalculation = None
-    torsional_buckling: FlexuralBucklingStrengthCalculation = None
+def _is_slender(
+    lamdba_ratio: float,
+    lambda_limit: float,
+    yield_stess: Quantity,
+    critical_stress: Quantity,
+):
+    if lamdba_ratio > lambda_limit * (yield_stess / critical_stress) ** 0.5:
+        raise NotImplementedError("Chapter E section 7 not implemented")
+    return False
 
 
 @dataclass
@@ -311,7 +315,7 @@ class DoublySymmetricI:
         design_type: DesignType = DesignType.ASD,
         required_strength: Quantity | None = None,
     ):
-        return LoadStrengthCalculation(
+        compression = LoadStrengthCalculation(
             criteria={
                 StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS: FlexuralBucklingStrengthCalculation(
                     length=length_major_axis,
@@ -346,6 +350,22 @@ class DoublySymmetricI:
                 ),
             }
         )
+        design_calculation: BucklingStrengthCalculationMixin = (
+            compression.design_strength_calculation
+        )
+        _is_slender(
+            lamdba_ratio=self._slenderness_2016.flange_ratio,
+            lambda_limit=self._slenderness_2016._flange_axial_limit,
+            yield_stess=self.material.yield_strength,
+            critical_stress=design_calculation.critical_stress,
+        )
+        _is_slender(
+            lamdba_ratio=self._slenderness_2016.web_ratio,
+            lambda_limit=self._slenderness_2016._web_axial_slender_limit,
+            yield_stess=self.material.yield_strength,
+            critical_stress=design_calculation.critical_stress,
+        )
+        return compression
 
     @property
     def slenderness_2016(self) -> DoublySymmetricSlenderness:

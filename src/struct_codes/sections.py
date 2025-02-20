@@ -14,38 +14,17 @@ class CalcMemory(Protocol): ...
 @dataclass
 class StrengthCalculation(Protocol):
     @property
-    def desing_strength(self) -> Quantity: ...
+    def design_strength(self) -> Quantity: ...
 
     @property
     def calculation_memory(self) -> CalcMemory: ...
 
 
-@dataclass
-class CalculationCollection(Protocol):
-    @property
-    def to_dict(self) -> dict[StrengthType, StrengthCalculation]:
-        return asdict(self)
-
-    @property
-    def desing_strenght_tuple(self):
-        return get_max_design_strength_tuple(self)
-
-    @property
-    def desing_strengt(self) -> Quantity:
-        return self.desing_strenght_tuple[0]
-
-
-def get_max_design_strength_tuple(collecion: CalculationCollection):
-    d = {key: value.desing_strength for key, value in collecion.to_dict.items()}
-    key = max(d, key=d.get)
-    return d[key], key
-
-
 def _get_min_design_strength(
     criteria: dict[StrengthType, StrengthCalculation],
 ) -> tuple[Quantity, StrengthType]:
-    d = {key: value.desing_strength for key, value in criteria.items()}
-    key = min(d, d.get)
+    d = {key: value.design_strength for key, value in criteria.items()}
+    key = min(d, key=d.get)
     return d[key], key
 
 
@@ -65,18 +44,9 @@ class LoadStrengthCalculation:
     def design_strength_criterion(self) -> StrengthType:
         return self.design_strength_tuple[1]
 
-
-class LoadCheck(Protocol):
-    criteria: CalculationCollection
-
     @property
-    def calculation_memories(self) -> dict[StrengthType, CalcMemory]: ...
-
-    @property
-    def design_strength(self) -> Quantity: ...
-
-    @property
-    def calculation_memory(self) -> CalcMemory: ...
+    def design_strength_calculation(self) -> StrengthCalculation:
+        return self.criteria[self.design_strength_criterion]
 
 
 class Section(Protocol):
@@ -93,7 +63,7 @@ class Section(Protocol):
         factor_k_torsion: float = 1.0,
         design_type: DesignType = DesignType.ASD,
         required_strength: Quantity = None,
-    ) -> LoadCheck: ...
+    ) -> LoadStrengthCalculation: ...
 
 
 class Geo(Protocol):

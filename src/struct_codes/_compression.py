@@ -76,6 +76,8 @@ def doubly_symmetric_i_warping_constant(
     return moment_of_inertia * distance_between_flanges_centroid**2 / 4
 
 
+
+
 @dataclass
 class BucklingStrengthCalculationMixin(StrengthMixin):
     yield_stress: Quantity
