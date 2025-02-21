@@ -10,10 +10,7 @@ from struct_codes.materials import Material
 from struct_codes.sections import ConstructionType, Section, SectionType
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
-DIRECTORY_PATH = Path(getcwd())
-
-DATABASE_PATH = Path(r"src\struct_codes\aisc-shapes-database-v16.0.csv")
-
+DATABASE_PATH = Path(__file__).parent / Path("aisc-shapes-database-v16.0.csv")
 
 LENGTH = "length"
 AREA = "area"
