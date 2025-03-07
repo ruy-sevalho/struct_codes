@@ -10,7 +10,8 @@ from struct_codes.materials import Material
 from struct_codes.sections import ConstructionType, Section, SectionType
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
-DATABASE_PATH = Path(__file__).parent / Path("aisc-shapes-database-v16.0.csv")
+DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.csv")
+DATABASE_PATH_15ed = Path(__file__).parent / Path("aisc-shapes-database-v15.0.csv")
 
 LENGTH = "length"
 AREA = "area"
@@ -144,11 +145,12 @@ def process_aisc_database_v160_row(section: dict[str, Any]):
     return {name: process_entry(name, value) for name, value in section.items()}
 
 
-def read_xls_table(file_path):
+def read_csv_table(file_path):
     with open(file_path, "r") as f:
         df = pd.read_csv(f, na_values="–")
 
     # dropping values in Imperial units
+
     df = df.drop(
         columns=[
             "W",
@@ -260,13 +262,11 @@ def read_xls_table(file_path):
         for row in df.itertuples(index=False)
     }
 
-    # with open("../examples/aisc_data.py", 'w') as f:
-    #     f.write(f"AISC_Sections = {AISC_Sections}")
-
     return AISC_Sections
 
 
-AISC_Sections = read_xls_table(DATABASE_PATH)
+aisc_sections_16ed = read_csv_table(DATABASE_PATH_16ed)
+aisc_sections_15ed = read_csv_table(DATABASE_PATH_15ed)
 
 section_table = {
     SectionType.W: (DoublySymmetricI, DoublySymmetricIGeo),
@@ -276,7 +276,7 @@ section_table = {
 def create_aisc_section(
     section_name: str, material: Material, construction: ConstructionType
 ) -> Section:
-    section_dict = AISC_Sections[section_name]
+    section_dict = aisc_sections_16ed[section_name]
     section_type = section_dict["type"]
     section_class, section_geo = section_table[section_type]
     geo_inputs = {
