@@ -32,3 +32,10 @@ steel355MPa = UserDefiniedMaterial(
     yield_strength=355 * megapascal,
     ultimate_strength=500 * megapascal,
 )
+steel250MPa = UserDefiniedMaterial(
+    modulus_linear=200 * gigapascal,
+    modulus_shear=77 * gigapascal,
+    poisson_ratio=0.3,
+    yield_strength=250 * megapascal,
+    ultimate_strength=400 * megapascal,
+)

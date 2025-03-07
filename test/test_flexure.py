@@ -6,22 +6,32 @@ from struct_codes._flexure import YieldingMomentCalculationMemory
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.i_section import DoublySymmetricI
-from struct_codes.materials import steel355MPa
+from struct_codes.materials import steel250MPa, steel355MPa
 from struct_codes.sections import ConstructionType
-from struct_codes.units import megapascal, meter, newton
+from struct_codes.units import meter, newton
 
 
 @mark.parametrize(
     "section, length, lateral_torsional_buckling_modification_factor, design_type, expected_flexural_yielding_calc_memory",
     [
         (
-            create_aisc_section("W6X15", steel355MPa, ConstructionType.ROLLED),
+            create_aisc_section("W44X335", steel355MPa, ConstructionType.ROLLED),
             1 * meter,
             1.0,
             DesignType.ASD,
             YieldingMomentCalculationMemory(
-                nominal_strength=1 * newton * 1 * meter,
-                design_strength=1 * newton * 1 * meter,
+                nominal_strength=9407500 * newton * meter,
+                design_strength=5633233.533 * newton * meter,
+            ),
+        ),
+        (
+            create_aisc_section("W6X15", steel250MPa, ConstructionType.ROLLED),
+            1 * meter,
+            1.0,
+            DesignType.ASD,
+            YieldingMomentCalculationMemory(
+                nominal_strength=44250 * newton * meter,
+                design_strength=26497.00599 * newton * meter,
             ),
         ),
     ],
