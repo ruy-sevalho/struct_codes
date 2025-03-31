@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 
+
 from struct_codes._compression import (
     BucklingStrengthCalculationMixin,
     FlexuralBucklingStrengthCalculation,
     TorsionalBucklingDoublySymmetricStrengthCalculation,
 )
-from struct_codes._flexure import YieldingMomentCalculation
+from struct_codes._flexure import (
+    LateralTorsionalBucklingCalculation2016,
+    YieldingMomentCalculation16,
+)
 from struct_codes._tension import (
     TensionCalculation2016,
     TesionUltimateCalculation,
@@ -350,6 +354,7 @@ class DoublySymmetricI:
                 ),
             }
         )
+        # TODO implement cases for section with slender elements
         design_calculation: BucklingStrengthCalculationMixin = (
             compression.design_strength_calculation
         )
@@ -434,10 +439,25 @@ class DoublySymmetricI:
     ) -> LoadStrengthCalculation:
         return LoadStrengthCalculation(
             criteria={
-                StrengthType.YIELD: YieldingMomentCalculation(
+                StrengthType.YIELD: YieldingMomentCalculation16(
                     plastic_section_modulus=self.geometry.Zx,
                     yield_stress=self.material.yield_strength,
                     design_type=design_type,
+                ),
+                StrengthType.LATERAL_TORSIONAL_BUCKLING: LateralTorsionalBucklingCalculation2016(
+                    length=length,
+                    modulus=self.material.modulus_linear,
+                    yield_stress=self.material.yield_strength,
+                    plastic_section_modulus=self.geometry.Zx,
+                    elastic_section_modulus=self.geometry.Sx,
+                    distance_between_flange_centroids=self.geometry.ho,
+                    torsional_constant=self.geometry.J,
+                    warping_constant=self.geometry.Cw,
+                    radius_of_gyration=self.geometry.ry,
+                    minor_axis_inertia=self.geometry.Iy,
+                    modification_factor=lateral_torsional_buckling_modification_factor,
+                    coefficient_c=1,
+                    design_type=design_type
                 ),
             }
         )

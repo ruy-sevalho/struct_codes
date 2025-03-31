@@ -1,10 +1,9 @@
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 from pint import Quantity
 
 from struct_codes.criteria import DesignType, StrengthMixin
-from struct_codes.sections import StrengthCalculation
 
 
 # ed15 360-2016 - F2-1
@@ -12,6 +11,7 @@ def yielding_moment(
     plastic_section_modulus: Quantity, yield_stress: Quantity
 ) -> Quantity:
     return plastic_section_modulus * yield_stress
+
 
 # ed15 360-2016 F2-2
 def flexural_lateral_torsional_buckling_strength_compact_doubly_symmetric_case_b(
@@ -30,6 +30,13 @@ def flexural_lateral_torsional_buckling_strength_compact_doubly_symmetric_case_b
     calculated_moment = mod_factor * (plastic_moment - mp_factor * l_factor)
     return calculated_moment
 
+
+def flexural_lateral_torsional_buckling_strength_compact_doubly_symmetric_case_c(
+    plastic_moment: Quantity,
+    section_modulus: Quantity,
+    critical_stress: Quantity,
+) -> Quantity:
+    return critical_stress * section_modulus
 
 
 def flexural_lateral_torsional_buckling_critical_stress_compact_doubly_symmetric(
@@ -55,6 +62,61 @@ def flexural_lateral_torsional_buckling_critical_stress_compact_doubly_symmetric
     return first_term * second_term
 
 
+def limiting_length_yield(
+    radius_of_gyration: Quantity, modulus: Quantity, yield_stress: Quantity
+) -> Quantity:
+    return 1.76 * radius_of_gyration * (modulus / yield_stress) ** 0.5
+
+
+def limiting_length_lateral_torsional_buckling(
+    modulus: Quantity,
+    yield_stress: Quantity,
+    elastic_section_modulus: Quantity,
+    torsional_constant: Quantity,
+    effective_radius_of_gyration: Quantity,
+    distance_between_centroids: Quantity,
+    coefficient_c: float,
+) -> Quantity:
+    """eq. F2-6 AISC 360-16"""
+    ratio = (
+        torsional_constant
+        * coefficient_c
+        / (elastic_section_modulus * distance_between_centroids)
+    )
+    inner_root = (ratio**2 + 6.76 * (0.7 * yield_stress / modulus) ** 2) ** 0.5
+    outer_root = (ratio + inner_root) ** 0.5
+    value = (
+        1.95
+        * effective_radius_of_gyration
+        * modulus
+        / (0.7 * yield_stress)
+        * outer_root
+    )
+    return value
+
+
+def effective_radius_of_gyration(
+    major_section_modulus: Quantity,
+    minor_inertia: Quantity,
+    warping_constant: Quantity,
+) -> Quantity:
+    return ((minor_inertia * warping_constant) ** 0.5 / major_section_modulus) ** 0.5
+
+
+def flexural_lateral_torsional_buckling_strength(
+    case_b: Quantity | str,
+    case_c: Quantity | str,
+    length_between_braces: Quantity,
+    limiting_length_yield: Quantity,
+    limiting_length_torsional_buckling: Quantity,
+) -> Quantity | None:
+    if length_between_braces <= limiting_length_yield:
+        return None
+    elif length_between_braces <= limiting_length_torsional_buckling:
+        return case_b
+    return case_c
+
+
 @dataclass
 class YieldingMomentCalculationMemory:
     nominal_strength: Quantity
@@ -62,7 +124,9 @@ class YieldingMomentCalculationMemory:
 
 
 @dataclass
-class YieldingMomentCalculation(StrengthMixin):
+class YieldingMomentCalculation16(StrengthMixin):
+    """AISC 360 2016 F2.1"""
+
     plastic_section_modulus: Quantity
     yield_stress: Quantity
     design_type: DesignType
@@ -78,4 +142,110 @@ class YieldingMomentCalculation(StrengthMixin):
     def calculation_memory(self):
         return YieldingMomentCalculationMemory(
             nominal_strength=self.nominal_strength, design_strength=self.design_strength
+        )
+
+
+@dataclass
+class LateralTorsionalBucklingCalculationMemory:
+    limiting_yield_length: Quantity
+    limiting_buckling_length: Quantity
+    nominal_strength: Quantity
+    design_strength: Quantity
+
+
+@dataclass
+class LateralTorsionalBucklingCalculation2016(StrengthMixin):
+    length: Quantity
+    modulus: Quantity
+    yield_stress: Quantity
+    plastic_section_modulus: Quantity
+    elastic_section_modulus: Quantity
+    distance_between_flange_centroids: Quantity
+    torsional_constant: Quantity
+    warping_constant: Quantity
+    radius_of_gyration: Quantity
+    minor_axis_inertia: Quantity
+    modification_factor: float
+    coefficient_c: float
+    design_type: DesignType = DesignType.ASD
+
+    @property
+    def limiting_yield_length(self) -> Quantity:
+        return limiting_length_yield(
+            radius_of_gyration=self.radius_of_gyration,
+            modulus=self.modulus,
+            yield_stress=self.yield_stress,
+        )
+
+    @property
+    def effective_radius_of_gyration(self):
+        return effective_radius_of_gyration(
+            major_section_modulus=self.elastic_section_modulus,
+            minor_inertia=self.minor_axis_inertia,
+            warping_constant=self.warping_constant,
+        )
+
+    @property
+    def limiting_length_lateral_torsional_buckling(self):
+        return limiting_length_lateral_torsional_buckling(
+            modulus=self.modulus,
+            yield_stress=self.yield_stress,
+            elastic_section_modulus=self.elastic_section_modulus,
+            torsional_constant=self.torsional_constant,
+            effective_radius_of_gyration=self.effective_radius_of_gyration,
+            distance_between_centroids=self.distance_between_flange_centroids,
+            coefficient_c=self.coefficient_c,
+        )
+
+    @property
+    def strength_lateral_torsion_compact_case_b(self) -> Quantity:
+        """F2-1 page 103"""
+        return flexural_lateral_torsional_buckling_strength_compact_doubly_symmetric_case_b(
+            length_between_braces=self.length,
+            limiting_length_torsional_buckling=self.limiting_length_lateral_torsional_buckling,
+            limiting_length_yield=self.limiting_yield_length,
+            mod_factor=self.modification_factor,
+            plastic_moment=self.plastic_section_modulus * self.yield_stress,
+            section_modulus=self.elastic_section_modulus,
+            yield_stress=self.yield_stress,
+        )
+
+    @property
+    def critical_stress_lateral_torsional_buckling(self) -> Quantity:
+        return flexural_lateral_torsional_buckling_critical_stress_compact_doubly_symmetric(
+            mod_factor=self.modification_factor,
+            length_between_braces=self.length,
+            modulus=self.modulus,
+            coefficient_c=self.coefficient_c,
+            distance_between_flange_centroids=self.distance_between_flange_centroids,
+            effective_radius_of_gyration=self.effective_radius_of_gyration,
+            section_modulus=self.elastic_section_modulus,
+            torsional_constant=self.torsional_constant,
+        )
+
+    @property
+    def strength_lateral_torsion_compact_case_c(self) -> Quantity:
+        return flexural_lateral_torsional_buckling_strength_compact_doubly_symmetric_case_c(
+            plastic_moment=self.plastic_section_modulus,
+            section_modulus=self.elastic_section_modulus,
+            critical_stress=self.critical_stress_lateral_torsional_buckling,
+        )
+
+    @property
+    def nominal_strength(self):
+        return flexural_lateral_torsional_buckling_strength(
+            case_b=self.strength_lateral_torsion_compact_case_b,
+            case_c=self.strength_lateral_torsion_compact_case_c,
+            length_between_braces=self.length,
+            limiting_length_yield=self.limiting_yield_length,
+            limiting_length_torsional_buckling=self.limiting_length_lateral_torsional_buckling,
+        )
+
+    @property
+    def calculation_memory(self):
+        return LateralTorsionalBucklingCalculationMemory(
+            limiting_yield_length=self.limiting_yield_length,
+            limiting_buckling_length=self.limiting_length_lateral_torsional_buckling,
+            nominal_strength=self.nominal_strength,
+            design_strength=self.design_strength,
         )
