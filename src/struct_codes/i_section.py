@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 from struct_codes._compression import (
     BucklingStrengthCalculationMixin,
     FlexuralBucklingStrengthCalculation,
@@ -8,6 +7,7 @@ from struct_codes._compression import (
 )
 from struct_codes._flexure import (
     LateralTorsionalBucklingCalculation2016,
+    MinorAxisYieldingCalculation2016,
     YieldingMomentCalculation16,
 )
 from struct_codes._tension import (
@@ -457,7 +457,19 @@ class DoublySymmetricI:
                     minor_axis_inertia=self.geometry.Iy,
                     modification_factor=lateral_torsional_buckling_modification_factor,
                     coefficient_c=1,
-                    design_type=design_type
+                    design_type=design_type,
+                ),
+            }
+        )
+
+    def flexure_minor_axis(self, design_type: DesignType = DesignType.ASD):
+        return LoadStrengthCalculation(
+            {
+                StrengthType.YIELD: MinorAxisYieldingCalculation2016(
+                    yield_stress=self.material.yield_strength,
+                    plastic_section_modulus=self.geometry.Zy,
+                    elastic_section_modulus=self.geometry.Sy,
+                    design_type=design_type,
                 ),
             }
         )

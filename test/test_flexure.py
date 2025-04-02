@@ -55,6 +55,44 @@ def test_w_section_flexural_yielding_major_axis_calc_memory_2016(
 
 
 @mark.parametrize(
+    "section, design_type, expected_flexural_yielding_calc_memory",
+    [
+        (
+            create_aisc_section("W44X335", steel355MPa, ConstructionType.ROLLED),
+            DesignType.ASD,
+            YieldingMomentCalculationMemory(
+                nominal_strength=1373850 * newton * meter,
+                design_strength=822664.6707 * newton * meter,
+            ),
+        ),
+        (
+            create_aisc_section("W6X15", steel250MPa, ConstructionType.ROLLED),
+            DesignType.ASD,
+            YieldingMomentCalculationMemory(
+                nominal_strength=19450 * newton * meter,
+                design_strength=11646.70659 * newton * meter,
+            ),
+        ),
+    ],
+)
+def test_w_section_flexural_yielding_minor_axis_calc_memory_2016(
+    section: DoublySymmetricI,
+    design_type: DesignType,
+    expected_flexural_yielding_calc_memory: YieldingMomentCalculationMemory,
+):
+    calc_memory = (
+        section.flexure_minor_axis(
+            design_type=design_type,
+        )
+        .criteria[StrengthType.YIELD]
+        .calculation_memory
+    )
+    assert simplify_dataclass(calc_memory) == approx(
+        simplify_dataclass(expected_flexural_yielding_calc_memory)
+    )
+
+
+@mark.parametrize(
     "section, length, lateral_torsional_buckling_modification_factor, design_type, expected_flexural_yielding_calc_memory",
     [
         (
@@ -90,12 +128,6 @@ def test_w_section_major_axis_lateral_torsional_buckling_calc_memory_2016(
     design_type: DesignType,
     expected_flexural_yielding_calc_memory: LateralTorsionalBucklingCalculationMemory,
 ):
-    f = section.flexure_major_axis(
-        length=length,
-        lateral_torsional_buckling_modification_factor=lateral_torsional_buckling_modification_factor,
-        design_type=design_type,
-    )
-    s = f.criteria[StrengthType.YIELD]
     calc_memory = (
         section.flexure_major_axis(
             length=length,
