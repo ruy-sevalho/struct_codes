@@ -10,6 +10,7 @@ from struct_codes._flexure import (
     MinorAxisYieldingCalculation2016,
     YieldingMomentCalculation16,
 )
+from struct_codes._shear import WebShearCalculation2016
 from struct_codes._tension import (
     TensionCalculation2016,
     TesionUltimateCalculation,
@@ -471,5 +472,19 @@ class DoublySymmetricI:
                     elastic_section_modulus=self.geometry.Sy,
                     design_type=design_type,
                 ),
+            }
+        )
+
+    def shear_major_axis(self, design_type: DesignType = DesignType.ASD):
+        return LoadStrengthCalculation(
+            criteria={
+                StrengthType.WEB_SHEAR: WebShearCalculation2016(
+                    yield_stress=self.material.yield_strength,
+                    web_area=self.geometry.d * self.geometry.tw,
+                    modulus=self.material.modulus_linear,
+                    web_ratio=self.geometry.h_tw,
+                    construction_type=self.construction,
+                    design_type=design_type,
+                )
             }
         )

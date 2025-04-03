@@ -6,7 +6,7 @@ from pint import Quantity
 
 
 class StrengthType(str, Enum):
-    SHEAR = "shear"
+    WEB_SHEAR = "web_shear"
     FLEXURAL_BUCKLING_MAJOR_AXIS = "flexural_buckling_major_axis"
     FLEXURAL_BUCKLING_MINOR_AXIS = "flexural_buckling_minor_axis"
     TORSIONAL_BUCKLING = "torsional_buckling"
