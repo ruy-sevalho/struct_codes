@@ -5,6 +5,8 @@ from pytest import approx, mark
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.i_section import (
     DoublySymmetricI,
+)
+from struct_codes.i_section._slenderness import (
     DoublySymmetricSlenderness,
     DoublySymmetricSlendernessCalcMemory,
 )

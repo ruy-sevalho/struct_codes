@@ -2,13 +2,13 @@ from pint import Quantity
 from pytest import approx, mark
 from unit_processing import simplify_dataclass
 
-from struct_codes._flexure import (
-    LateralTorsionalBucklingCalculationMemory,
-    YieldingMomentCalculationMemory,
-)
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.i_section import DoublySymmetricI
+from struct_codes.i_section._flexure import (
+    LateralTorsionalBucklingCalculationMemory,
+    YieldingMomentCalculationMemory,
+)
 from struct_codes.materials import steel250MPa, steel355MPa
 from struct_codes.sections import ConstructionType
 from struct_codes.units import meter, newton

@@ -33,7 +33,7 @@ class LoadStrengthCalculation:
     criteria: dict[StrengthType, StrengthCalculation]
 
     @property
-    def design_strength_tuple(self) -> Quantity:
+    def design_strength_tuple(self):
         return _get_min_design_strength(self.criteria)
 
     @property

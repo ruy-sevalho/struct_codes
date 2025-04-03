@@ -3,7 +3,7 @@ from dataclasses import asdict
 from pytest import approx, mark
 from unit_processing import simplify_dataclass
 
-from struct_codes._compression import (
+from struct_codes.i_section._compression import (
     BeamCompressionParam,
     BucklingStrengthCalculationMemory,
 )

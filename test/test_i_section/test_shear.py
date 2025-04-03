@@ -1,7 +1,7 @@
 from pytest import approx, mark
 from unit_processing import simplify_dataclass
 
-from struct_codes._shear import WebShearCalculationMemory2016
+from struct_codes.i_section._shear import WebShearCalculationMemory2016
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.i_section import DoublySymmetricI
