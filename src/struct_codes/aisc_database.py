@@ -9,8 +9,8 @@ from struct_codes.materials import Material
 from struct_codes.sections import ConstructionType, Section, SectionType
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
-DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.csv")
-DATABASE_PATH_15ed = Path(__file__).parent / Path("aisc-shapes-database-v15.0.csv")
+DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.json")
+DATABASE_PATH_15ed = Path(__file__).parent / Path("aisc-shapes-database-v15.0.json")
 
 LENGTH = "length"
 AREA = "area"
@@ -144,7 +144,7 @@ def process_aisc_database_v160_row(section: dict[str, Any]):
     return {name: process_entry(name, value) for name, value in section.items()}
 
 
-def read_csv_table(file_path):
+def read_csv_table(file_path: Path):
     with open(file_path, "r") as f:
         df = pd.read_csv(f, na_values="–")
 
@@ -253,19 +253,25 @@ def read_csv_table(file_path):
         },
         inplace=True,
     )
+    return convert_inputs(df)
 
-    AISC_Sections = {
+
+def read_json_cleaned_up_file(file_path: Path):
+    df = pd.read_json(file_path)
+    return convert_inputs(df)
+
+
+def convert_inputs(df: pd.DataFrame):
+    return {
         row.EDI_STD_Nomenclature_imp: dict(
             **process_aisc_database_v160_row(row._asdict())
         )
         for row in df.itertuples(index=False)
     }
 
-    return AISC_Sections
 
-
-aisc_sections_16ed = read_csv_table(DATABASE_PATH_16ed)
-aisc_sections_15ed = read_csv_table(DATABASE_PATH_15ed)
+aisc_sections_16ed = read_json_cleaned_up_file(DATABASE_PATH_16ed)
+aisc_sections_15ed = read_json_cleaned_up_file(DATABASE_PATH_15ed)
 
 section_table = {
     SectionType.W: (DoublySymmetricI, DoublySymmetricIGeo),
@@ -275,7 +281,7 @@ section_table = {
 def create_aisc_section(
     section_name: str, material: Material, construction: ConstructionType
 ) -> Section:
-    section_dict = aisc_sections_16ed[section_name]
+    section_dict = aisc_sections_15ed[section_name]
     section_type = section_dict["type"]
     section_class, section_geo = section_table[section_type]
     geo_inputs = {
