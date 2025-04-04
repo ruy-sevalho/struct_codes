@@ -19,7 +19,6 @@ from struct_codes.i_section._slenderness import (
     _is_slender,
 )
 from struct_codes.i_section._tension import (
-    TensionCalculation2016,
     TesionUltimateCalculation,
     TesionYieldCalculation,
 )
@@ -177,15 +176,6 @@ class DoublySymmetricI:
         if self.connection:
             reduction = self.connection.area_reduction
         return self.geometry.A - reduction
-
-    def _tension_calculation_2016(self, design_type: DesignType):
-        return TensionCalculation2016(
-            net_area=self._net_area,
-            gross_area=self.geometry.A,
-            yield_stress=self.material.yield_strength,
-            ultimate_stress=self.material.ultimate_strength,
-            design_type=design_type,
-        )
 
     def _tension_2016(self, design_type: DesignType):
         shear_lag_factor = 1.0
