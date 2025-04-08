@@ -1,16 +1,13 @@
 from pint import Quantity
-from pytest import approx, mark
-from unit_processing import compare_quantites, simplify_dataclass
+from pytest import mark
+from unit_processing import compare_quantites 
 
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType, StrengthType
-from struct_codes.i_section._tension import (
-    TensionUltimateCalculationMemory,
-    TensionYieldCalculationMemory,
-)
+
 from struct_codes.materials import steel355MPa
 from struct_codes.sections import ConstructionType, Section
-from struct_codes.units import millimeter, newton
+from struct_codes.units import newton
 
 
 @mark.parametrize(
