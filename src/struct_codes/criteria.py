@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum
 
 from pint import Quantity
@@ -47,9 +46,10 @@ class StrengthMixin(ABC):
 
     @property
     def design_strength(self) -> Quantity:
+        ns = self.nominal_strength
         table = {DesignType.ASD: self.asd_factor, DesignType.LRFD: self.lrfd_factor}
         return calculate_design_strength(
-            nominal_strength=self.nominal_strength,
+            nominal_strength=ns,
             design_type=self.design_type,
             factor=table[self.design_type],
         )

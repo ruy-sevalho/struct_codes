@@ -1,7 +1,7 @@
-from pytest import approx, mark
-from unit_processing import simplify_dataclass
+from pint import Quantity
+from pytest import mark
+from unit_processing import compare_quantites
 
-from struct_codes.i_section._shear import WebShearCalculationMemory2016
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.i_section import DoublySymmetricI
@@ -11,40 +11,30 @@ from struct_codes.units import newton
 
 
 @mark.parametrize(
-    "section, design_type, expected_shear_yielding_calc_memory",
+    "section, design_type, expected_design_strength",
     [
         (
             create_aisc_section("W44X335", steel355MPa, ConstructionType.ROLLED),
             DesignType.ASD,
-            WebShearCalculationMemory2016(
-                nominal_strength=6250272 * newton,
-                design_strength=4166848 * newton,
-                web_shear_strength_coefficient=1,
-            ),
+            4166848 * newton,
         ),
         (
             create_aisc_section("W6X15", steel250MPa, ConstructionType.ROLLED),
             DesignType.LRFD,
-            WebShearCalculationMemory2016(
-                nominal_strength=133152 * newton,
-                design_strength=133152 * newton,
-                web_shear_strength_coefficient=1,
-            ),
+            133152 * newton,
         ),
     ],
 )
 def test_w_section_web_shear_calc_memory_2016(
     section: DoublySymmetricI,
     design_type: DesignType,
-    expected_shear_yielding_calc_memory: WebShearCalculationMemory2016,
+    expected_design_strength: Quantity,
 ):
-    calc_memory = (
+    ds = (
         section.shear_major_axis(
             design_type=design_type,
         )
         .criteria[StrengthType.WEB_SHEAR]
-        .calculation_memory
+        .design_strength
     )
-    assert simplify_dataclass(calc_memory) == approx(
-        simplify_dataclass(expected_shear_yielding_calc_memory)
-    )
+    compare_quantites(ds, expected_design_strength)

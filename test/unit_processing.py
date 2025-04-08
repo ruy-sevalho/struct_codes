@@ -1,6 +1,7 @@
 from dataclasses import asdict
 
 from pint import Quantity
+from pytest import approx
 
 
 def simplify_units(quantity: Quantity) -> float:
@@ -17,3 +18,7 @@ def simplify_dataclass(data_objetct):
         if isinstance(value, Quantity):
             d[key] = simplify_units(value)
     return d
+
+
+def compare_quantites(q1: Quantity, q2: Quantity):
+    assert q1.to_base_units().magnitude == approx(q2.to_base_units().magnitude)

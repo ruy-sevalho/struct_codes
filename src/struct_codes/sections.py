@@ -1,9 +1,8 @@
-from abc import ABC
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
-from struct_codes.criteria import DesignType, StrengthType
+from struct_codes.criteria import DesignType, StrengthMixin, StrengthType
 from struct_codes.units import Quantity
 
 
@@ -11,17 +10,8 @@ from struct_codes.units import Quantity
 class CalcMemory(Protocol): ...
 
 
-@dataclass
-class StrengthCalculation(Protocol):
-    @property
-    def design_strength(self) -> Quantity: ...
-
-    @property
-    def calculation_memory(self) -> CalcMemory: ...
-
-
 def _get_min_design_strength(
-    criteria: dict[StrengthType, StrengthCalculation],
+    criteria: dict[StrengthType, StrengthMixin],
 ) -> tuple[Quantity, StrengthType]:
     d = {key: value.design_strength for key, value in criteria.items()}
     key = min(d, key=d.get)
@@ -30,7 +20,7 @@ def _get_min_design_strength(
 
 @dataclass
 class LoadStrengthCalculation:
-    criteria: dict[StrengthType, StrengthCalculation]
+    criteria: dict[StrengthType, StrengthMixin]
 
     @property
     def design_strength_tuple(self):
@@ -45,8 +35,14 @@ class LoadStrengthCalculation:
         return self.design_strength_tuple[1]
 
     @property
-    def design_strength_calculation(self) -> StrengthCalculation:
+    def design_strength_calculation(self) -> StrengthMixin:
         return self.criteria[self.design_strength_criterion]
+
+    @property
+    def strengths(self):
+        return {
+            key.value: value.design_strength for key, value in self.criteria.items()
+        }
 
 
 class Section(Protocol):
