@@ -24,9 +24,11 @@ from struct_codes.i_section._tension import (
 )
 from struct_codes.materials import Material
 from struct_codes.sections import (
+    Beam,
     Connection,
     ConstructionType,
     LoadStrengthCalculation,
+    RuleEd,
     SectionType,
 )
 from struct_codes.units import Quantity
@@ -97,7 +99,7 @@ class DoublySymmetricI:
         length_torsion: Quantity = None,
         factor_k_torsion: float = 1.0,
         design_type: DesignType = DesignType.ASD,
-        required_strength: Quantity | None = None,
+        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
     ):
         compression = LoadStrengthCalculation(
             criteria={
@@ -177,10 +179,10 @@ class DoublySymmetricI:
             reduction = self.connection.area_reduction
         return self.geometry.A - reduction
 
-    def _tension_2016(self, design_type: DesignType):
-        shear_lag_factor = 1.0
-        if self.connection:
-            shear_lag_factor = self.connection.shear_lag_factor
+    def _tension_2016(
+        self, shear_lag_factor: float = None, design_type: DesignType = DesignType.ASD
+    ):
+        shear_lag_factor = shear_lag_factor or 1.0
         return LoadStrengthCalculation(
             criteria={
                 StrengthType.YIELD: TesionYieldCalculation(
@@ -198,7 +200,9 @@ class DoublySymmetricI:
         )
 
     def tension(
-        self, design_type: DesignType = DesignType.ASD
+        self,
+        design_type: DesignType = DesignType.ASD,
+        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
     ) -> LoadStrengthCalculation:
         return self._tension_2016(design_type=design_type)
 
@@ -207,6 +211,7 @@ class DoublySymmetricI:
         length: Quantity = None,
         lateral_torsional_buckling_modification_factor: float = 1.0,
         design_type: DesignType = DesignType.ASD,
+        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
     ) -> LoadStrengthCalculation:
         return LoadStrengthCalculation(
             criteria={
@@ -233,7 +238,11 @@ class DoublySymmetricI:
             }
         )
 
-    def flexure_minor_axis(self, design_type: DesignType = DesignType.ASD):
+    def flexure_minor_axis(
+        self,
+        design_type: DesignType = DesignType.ASD,
+        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    ):
         return LoadStrengthCalculation(
             {
                 StrengthType.YIELD: MinorAxisYieldingCalculation2016(
@@ -245,7 +254,29 @@ class DoublySymmetricI:
             }
         )
 
-    def shear_major_axis(self, design_type: DesignType = DesignType.ASD):
+    def shear_major_axis(
+        self,
+        design_type: DesignType = DesignType.ASD,
+        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    ):
+        return LoadStrengthCalculation(
+            criteria={
+                StrengthType.WEB_SHEAR: WebShearCalculation2016(
+                    yield_stress=self.material.yield_strength,
+                    web_area=self.geometry.d * self.geometry.tw,
+                    modulus=self.material.modulus_linear,
+                    web_ratio=self.geometry.h_tw,
+                    construction_type=self.construction,
+                    design_type=design_type,
+                )
+            }
+        )
+
+    def shear_minor_axis(
+        self,
+        design_type: DesignType = DesignType.ASD,
+        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    ):
         return LoadStrengthCalculation(
             criteria={
                 StrengthType.WEB_SHEAR: WebShearCalculation2016(

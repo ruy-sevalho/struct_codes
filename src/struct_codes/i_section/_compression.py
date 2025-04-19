@@ -20,6 +20,7 @@ class BeamCompressionParam:
 def member_slenderness_ratio(
     factor_k: float, unbraced_length: Quantity, radius_of_gyration: Quantity
 ) -> float:
+    """"""
     n = unbraced_length / radius_of_gyration
     return factor_k * n
 

@@ -1,12 +1,12 @@
 from pint import Quantity
 from pytest import mark
-from unit_processing import compare_quantites 
+from unit_processing import compare_quantites
 
 from struct_codes.aisc_database import create_aisc_section
 from struct_codes.criteria import DesignType, StrengthType
-
+from struct_codes.i_section import DoublySymmetricI
 from struct_codes.materials import steel355MPa
-from struct_codes.sections import ConstructionType, Section
+from struct_codes.sections import ConstructionType
 from struct_codes.units import newton
 
 
@@ -21,7 +21,7 @@ from struct_codes.units import newton
     ],
 )
 def test_tension_yield_calc_memory(
-    section: Section,
+    section: DoublySymmetricI,
     design_type: DesignType,
     expected_design_strength: Quantity,
 ):
@@ -41,7 +41,7 @@ def test_tension_yield_calc_memory(
     ],
 )
 def test_tension_ultimate_calc_memory(
-    section: Section,
+    section: DoublySymmetricI,
     design_type: DesignType,
     expected_design_strength: Quantity,
 ):

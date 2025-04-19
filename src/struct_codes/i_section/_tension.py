@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from struct_codes.criteria import DesignType, StrengthMixin, calculate_design_strength
+from struct_codes.criteria import DesignType, StrengthMixin
 from struct_codes.units import Quantity
 
 

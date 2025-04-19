@@ -2,11 +2,12 @@ from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
+from math import isnan
 import pandas as pd
 
 from struct_codes.i_section import DoublySymmetricI, DoublySymmetricIGeo
 from struct_codes.materials import Material
-from struct_codes.sections import ConstructionType, Section, SectionType
+from struct_codes.sections import ConstructionType, SectionType
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
 DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.json")
@@ -264,7 +265,13 @@ def read_json_cleaned_up_file(file_path: Path):
 def convert_inputs(df: pd.DataFrame):
     return {
         row.EDI_STD_Nomenclature_imp: dict(
-            **process_aisc_database_v160_row(row._asdict())
+            **process_aisc_database_v160_row(
+                {
+                    key: value
+                    for key, value in row._asdict().items()
+                    if not (isinstance(value, float) and isnan(value))
+                }
+            )
         )
         for row in df.itertuples(index=False)
     }
@@ -280,7 +287,7 @@ section_table = {
 
 def create_aisc_section(
     section_name: str, material: Material, construction: ConstructionType
-) -> Section:
+):
     section_dict = aisc_sections_15ed[section_name]
     section_type = section_dict["type"]
     section_class, section_geo = section_table[section_type]
