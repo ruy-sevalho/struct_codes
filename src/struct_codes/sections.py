@@ -1,10 +1,10 @@
-from abc import abstractmethod
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, auto, StrEnum
 from typing import Protocol
 
-from struct_codes.criteria import DesignType, StrengthMixin, StrengthType
-from struct_codes.materials import Material
+from zmq import CHANNEL
+
+from struct_codes.criteria import StrengthMixin, StrengthType
 from struct_codes.units import Quantity
 
 
@@ -26,6 +26,36 @@ class SectionType(str, Enum):
     ST = "ST"
     W = "W"
     WT = "WT"
+
+
+class SectionClassification(StrEnum):
+    DOUBLY_SYMMETRIC_I = auto()
+    SINGLY_SYMMETRIC_I = auto()
+    CHANEL = auto()
+    TEE = auto()
+    ANGLE = auto()
+    HSS = auto()
+    PIPE = auto()
+
+
+section_table = {
+    SectionType.C: SectionClassification.CHANEL,
+    SectionType.HP: SectionClassification.DOUBLY_SYMMETRIC_I,
+    SectionType.HSS: SectionClassification.HSS,
+    SectionType.L: SectionClassification.ANGLE,
+    SectionType.M: SectionClassification.DOUBLY_SYMMETRIC_I,
+    SectionType.MC: SectionClassification.CHANEL,
+    SectionType.MT: SectionClassification.TEE,
+    SectionType.PIPE: SectionClassification.PIPE,
+    SectionType.S: SectionClassification.DOUBLY_SYMMETRIC_I,
+    SectionType.ST: SectionClassification.TEE,
+    SectionType.Two_L: SectionClassification.TEE,
+    SectionType.W: SectionClassification.DOUBLY_SYMMETRIC_I,
+}
+
+DOUBLY_SYMMETRIC_I = (SectionType.W, SectionType.WT, SectionType.M)
+CHANEL = (SectionType.C, SectionType.MC,)
+
 
 
 @dataclass(frozen=True)
@@ -259,50 +289,48 @@ class Connection(Protocol):
     def shear_lag_factor(self) -> float: ...
 
 
-class Section(Protocol):
-    geometry: SectionGeometry
-    material: Material
-    construction: ConstructionType
+# class Section(Protocol):
+#     geometry: SectionGeometry
+#     material: Material
+#     construction: ConstructionType
 
+#     @abstractmethod
+#     def compression(
+#         self,
+#         length_major_axis: Quantity,
+#         factor_k_major_axis: float = 1.0,
+#         length_minor_axis: Quantity = None,
+#         factor_k_minor_axis: float = 1.0,
+#         length_torsion: Quantity = None,
+#         factor_k_torsion: float = 1.0,
+#         design_type: DesignType = DesignType.ASD,
+#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+#     ) -> LoadStrengthCalculation: ...
 
+#     @abstractmethod
+#     def flexure_major_axis(
+#         length: Quantity,
+#         design_type: DesignType = DesignType.ASD,
+#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+#     ) -> LoadStrengthCalculation: ...
 
-    @abstractmethod
-    def compression(
-        self,
-        length_major_axis: Quantity,
-        factor_k_major_axis: float = 1.0,
-        length_minor_axis: Quantity = None,
-        factor_k_minor_axis: float = 1.0,
-        length_torsion: Quantity = None,
-        factor_k_torsion: float = 1.0,
-        design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-    ) -> LoadStrengthCalculation: ...
+#     @abstractmethod
+#     def flexure_minor_axis(
+#         design_type: DesignType = DesignType.ASD,
+#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+#     ) -> LoadStrengthCalculation: ...
 
-    @abstractmethod
-    def flexure_major_axis(
-        length: Quantity,
-        design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-    ) -> LoadStrengthCalculation: ...
+#     @abstractmethod
+#     def shear_major_axis(
+#         design_type: DesignType = DesignType.ASD,
+#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+#     ) -> LoadStrengthCalculation: ...
 
-    @abstractmethod
-    def flexure_minor_axis(
-        design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-    ) -> LoadStrengthCalculation: ...
-
-    @abstractmethod
-    def shear_major_axis(
-        design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-    ) -> LoadStrengthCalculation: ...
-
-    @abstractmethod
-    def shear_minor_axis(
-        design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-    ) -> LoadStrengthCalculation: ...
+#     @abstractmethod
+#     def shear_minor_axis(
+#         design_type: DesignType = DesignType.ASD,
+#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+#     ) -> LoadStrengthCalculation: ...
 
 
 @dataclass
@@ -314,18 +342,3 @@ class Beam:
     length_torsion: Quantity = None
     factor_k_torsion: float = 1.0
     length_bracing_lateral_torsional_buckling: Quantity = None
-
-
-# @dataclass
-# class Analysis:
-#     section: Section
-#     beam: Beam
-#     design_type: DesignType
-#     connection: Connection | None = None
-
-
-@dataclass
-class BeamAnalysis:
-    geometry: SectionGeometry
-    material: Material
-    construction: ConstructionType

@@ -24,7 +24,6 @@ from struct_codes.i_section._tension import (
 )
 from struct_codes.materials import Material
 from struct_codes.sections import (
-    Beam,
     Connection,
     ConstructionType,
     LoadStrengthCalculation,

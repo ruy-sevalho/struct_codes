@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 
 from pint import Quantity
 
+@dataclass
+class NotAplicable: 
+    message: str = ""
 
 class StrengthType(str, Enum):
     WEB_SHEAR = "web_shear"
