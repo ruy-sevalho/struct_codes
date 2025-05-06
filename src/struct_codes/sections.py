@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 from typing import Protocol
 
-from zmq import CHANNEL
-
 from struct_codes.criteria import StrengthMixin, StrengthType
 from struct_codes.units import Quantity
 

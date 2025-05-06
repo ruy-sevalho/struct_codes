@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
-from struct_codes.compression import FlexuralBucklingStrengthCalculation
+from struct_codes.compression import (
+    FlexuralBucklingStrengthCalculation,
+    TorsionalBucklingDoublySymmetricStrengthCalculation,
+)
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.materials import Material
 from struct_codes.sections import (
@@ -72,9 +75,18 @@ class BeamAnalysis:
     @property
     def flexural_torsional_buckling_E4(self):
         table = {
-            
+            SectionClassification.DOUBLY_SYMMETRIC_I: TorsionalBucklingDoublySymmetricStrengthCalculation(
+                yield_stress=self.material.yield_strength,
+                gross_area=self.geometry.A,
+                modulus_linear=self.material.modulus_linear,
+                modulus_shear=self.material.modulus_shear,
+                major_axis_inertia=self.geometry.Ix,
+                minor_axis_inertia=self.geometry.Iy,
+                torsional_constant=self.geometry.J,
+                warping_constant=self.geometry.Cw,
+            ),
         }
-        return
+        return table[self.section_classification]
 
     def compression(self) -> LoadStrengthCalculation:
         criteria = {
