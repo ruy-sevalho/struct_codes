@@ -1,23 +1,35 @@
+from dataclasses import dataclass
+
 from struct_codes.compression import FlexuralBucklingStrengthCalculation
 from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.materials import Material
 from struct_codes.sections import (
+    ANGLE,
     CHANEL,
     DOUBLY_SYMMETRIC_I,
-    Beam,
+    HSS,
+    PIPE,
     ConstructionType,
     LoadStrengthCalculation,
     RuleEd,
     SectionClassification,
     SectionGeometry,
     SectionType,
-    section_table
+    section_table,
 )
 from struct_codes.slenderness import DefaultSlendernessCalculation2016
 from struct_codes.units import Quantity
 
 
-from dataclasses import dataclass
+@dataclass
+class Beam:
+    length_major_axis: Quantity
+    factor_k_major_axis: float = 1.0
+    length_minor_axis: Quantity = None
+    factor_k_minor_axis: float = 1.0
+    length_torsion: Quantity = None
+    factor_k_torsion: float = 1.0
+    length_bracing_lateral_torsional_buckling: Quantity = None
 
 
 @dataclass
@@ -38,18 +50,31 @@ class BeamAnalysis:
         return section_table[self.type]
 
     @property
-    def flexural_bucking_major_axis(self):
-        if self.type in DOUBLY_SYMMETRIC_I + CHANEL:
-            calculation = FlexuralBucklingStrengthCalculation(
-                yield_stress=self.material.yield_strength,
-                gross_area=self.geometry.A,
-                length=self.beam.length_major_axis,
-                factor_k=self.beam.factor_k_major_axis,
-                radius_of_gyration=self.geometry.rx,
-            )
-        if self.type in 
-            NotImplementedError(f"Flexural buckling not implemented for section {self.type.value}")
+    def flexural_bucking_minor_axis_compact_E3(self):
+        return FlexuralBucklingStrengthCalculation(
+            yield_stress=self.material.yield_strength,
+            gross_area=self.geometry.A,
+            length=self.beam.length_minor_axis or self.beam.length_major_axis,
+            factor_k=self.beam.factor_k_major_axis or self.beam.factor_k_major_axis,
+            radius_of_gyration=self.geometry.ry,
+        )
+
+    @property
+    def flexural_bucking_major_axis_compact_E3(self):
+        return FlexuralBucklingStrengthCalculation(
+            yield_stress=self.material.yield_strength,
+            gross_area=self.geometry.A,
+            length=self.beam.length_major_axis,
+            factor_k=self.beam.factor_k_major_axis,
+            radius_of_gyration=self.geometry.rx,
+        )
+
+    @property
+    def flexural_torsional_buckling_E4(self):
+        table = {
             
+        }
+        return
 
     def compression(self) -> LoadStrengthCalculation:
         criteria = {

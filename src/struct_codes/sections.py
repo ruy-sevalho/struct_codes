@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum, auto, StrEnum
+from enum import Enum, StrEnum, auto
 from typing import Protocol
 
 from zmq import CHANNEL
@@ -33,6 +33,7 @@ class SectionClassification(StrEnum):
     SINGLY_SYMMETRIC_I = auto()
     CHANEL = auto()
     TEE = auto()
+    TWO_L = auto()
     ANGLE = auto()
     HSS = auto()
     PIPE = auto()
@@ -49,13 +50,19 @@ section_table = {
     SectionType.PIPE: SectionClassification.PIPE,
     SectionType.S: SectionClassification.DOUBLY_SYMMETRIC_I,
     SectionType.ST: SectionClassification.TEE,
-    SectionType.Two_L: SectionClassification.TEE,
+    SectionType.Two_L: SectionClassification.TWO_L,
     SectionType.W: SectionClassification.DOUBLY_SYMMETRIC_I,
 }
 
-DOUBLY_SYMMETRIC_I = (SectionType.W, SectionType.WT, SectionType.M)
-CHANEL = (SectionType.C, SectionType.MC,)
-
+DOUBLY_SYMMETRIC_I = (SectionType.W, SectionType.WT, SectionType.M, SectionType.HP)
+CHANEL = (
+    SectionType.C,
+    SectionType.MC,
+)
+ANGLE = (SectionType.L,)
+TEE = (SectionType.Two_L, SectionType.MT, SectionType.ST)
+HSS = (SectionType.HSS,)
+PIPE = (SectionType.PIPE,)
 
 
 @dataclass(frozen=True)
@@ -331,14 +338,3 @@ class Connection(Protocol):
 #         design_type: DesignType = DesignType.ASD,
 #         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
 #     ) -> LoadStrengthCalculation: ...
-
-
-@dataclass
-class Beam:
-    length_major_axis: Quantity
-    factor_k_major_axis: float = 1.0
-    length_minor_axis: Quantity = None
-    factor_k_minor_axis: float = 1.0
-    length_torsion: Quantity = None
-    factor_k_torsion: float = 1.0
-    length_bracing_lateral_torsional_buckling: Quantity = None
