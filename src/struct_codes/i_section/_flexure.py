@@ -133,12 +133,6 @@ def flexural_lateral_torsional_buckling_strength(
 
 
 @dataclass
-class YieldingMomentCalculationMemory:
-    nominal_strength: Quantity
-    design_strength: Quantity
-
-
-@dataclass
 class YieldingMomentCalculation16(StrengthMixin):
     """AISC 360 2016 F2.1"""
 
@@ -151,12 +145,6 @@ class YieldingMomentCalculation16(StrengthMixin):
         return yielding_moment(
             plastic_section_modulus=self.plastic_section_modulus,
             yield_stress=self.yield_stress,
-        )
-
-    @property
-    def calculation_memory(self):
-        return YieldingMomentCalculationMemory(
-            nominal_strength=self.nominal_strength, design_strength=self.design_strength
         )
 
 
@@ -175,20 +163,6 @@ class MinorAxisYieldingCalculation2016(StrengthMixin):
             elastic_section_modulus=self.elastic_section_modulus,
         )
 
-    @property
-    def calculation_memory(self):
-        return YieldingMomentCalculationMemory(
-            nominal_strength=self.nominal_strength, design_strength=self.design_strength
-        )
-
-
-@dataclass
-class LateralTorsionalBucklingCalculationMemory:
-    limiting_yield_length: Quantity
-    limiting_buckling_length: Quantity
-    nominal_strength: Quantity
-    design_strength: Quantity
-
 
 @dataclass
 class LateralTorsionalBucklingSectionParam2016:
@@ -202,7 +176,7 @@ class LateralTorsionalBucklingSectionParam2016:
     torsional_constant: Quantity
     distance_between_flange_centroids: Quantity
     coefficient_c: float
-     
+
     @property
     def plastic_moment(self):
         return self.plastic_section_modulus * self.yield_stress
@@ -234,8 +208,6 @@ class LateralTorsionalBucklingSectionParam2016:
             distance_between_centroids=self.distance_between_flange_centroids,
             coefficient_c=self.coefficient_c,
         )
-
-
 
 
 @dataclass
@@ -342,8 +314,3 @@ class LateralTorsionalBucklingCalculation2016(StrengthMixin):
             nominal_strength=self.nominal_strength,
             design_strength=self.design_strength,
         )
-
-
-@dataclass
-class _LateralTorsionalBucklingCalculation2016(StrengthMixin):
-    length: Quantity

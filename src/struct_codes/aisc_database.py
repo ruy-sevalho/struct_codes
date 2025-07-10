@@ -1,17 +1,17 @@
 from dataclasses import fields
+from math import isnan
 from pathlib import Path
 from typing import Any
 
-from math import isnan
 import pandas as pd
 
 from struct_codes.i_section import DoublySymmetricI, DoublySymmetricIGeo
 from struct_codes.materials import Material
-from struct_codes.sections import ConstructionType, SectionType
+from struct_codes.sections import AiscSectionGeometry, ConstructionType, SectionType
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
-DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.json")
-DATABASE_PATH_15ed = Path(__file__).parent / Path("aisc-shapes-database-v15.0.json")
+DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.csv")
+DATABASE_PATH_15ed = Path(__file__).parent / Path("aisc-shapes-database-v15.0.csv")
 
 LENGTH = "length"
 AREA = "area"
@@ -129,6 +129,8 @@ def convert(value: float, unit: Quantity, factor: float = 1) -> Quantity:
 
 def process_entry(name: str, value: Any):
     typ = PARAMS[name]
+    if isinstance(value, float) and isnan(value):
+        return None
     if typ in CONVERSION_FACTORS:
         unit, factor = CONVERSION_FACTORS[typ]
         return float(value) * factor * unit
@@ -269,7 +271,7 @@ def convert_inputs(df: pd.DataFrame):
                 {
                     key: value
                     for key, value in row._asdict().items()
-                    if not (isinstance(value, float) and isnan(value))
+                    # if not (isinstance(value, float) and isnan(value))
                 }
             )
         )
@@ -277,12 +279,10 @@ def convert_inputs(df: pd.DataFrame):
     }
 
 
-aisc_sections_16ed = read_json_cleaned_up_file(DATABASE_PATH_16ed)
-aisc_sections_15ed = read_json_cleaned_up_file(DATABASE_PATH_15ed)
+aisc_sections_16ed = read_csv_table(DATABASE_PATH_16ed)
+aisc_sections_15ed = read_csv_table(DATABASE_PATH_15ed)
 
-section_table = {
-    SectionType.W: (DoublySymmetricI, DoublySymmetricIGeo),
-}
+section_table = {SectionType.W: DoublySymmetricI}
 
 
 def create_aisc_section(
@@ -290,10 +290,9 @@ def create_aisc_section(
 ):
     section_dict = aisc_sections_15ed[section_name]
     section_type = section_dict["type"]
-    section_class, section_geo = section_table[section_type]
-    geo_inputs = {
-        key: section_dict[key] for key in (f.name for f in fields(section_geo))
-    }
+    section_class = section_table[section_type]
     return section_class(
-        geometry=section_geo(**geo_inputs), material=material, construction=construction
+        geometry=AiscSectionGeometry(**section_dict),
+        material=material,
+        construction=construction,
     )

@@ -1,0 +1,27 @@
+tension
+D2 - tensile strength
+yielding strength 
+rupture 
+same for all sections
+
+compression 
+E3. FLEXURAL BUCKLING OF MEMBERS WITHOUT SLENDER ELEMENTS 
+f(critical stress, gross area)
+critical stress = f(
+f(beam length, radius of gyration, 
+the same for all sections classes
+
+E4. TORSIONAL AND FLEXURAL-TORSIONAL BUCKLING OF SINGLE ANGLES AND MEMBERS WITHOUT SLENDER ELEMENTS
+elastic buckling stress cases:
+Doubly symmetric I
+Singly symmetric I and Channels
+Unsymmetric member twisting about the shear center
+
+E5. SINGLE-ANGLE COMPRESSION MEMBERS
+
+E6. BUILT-UP MEMBERS
+E3, E4 and E7 with modifications
+
+E7. MEMBERS WITH SLENDER ELEMENTS
+E3 and E4 with modifications
+

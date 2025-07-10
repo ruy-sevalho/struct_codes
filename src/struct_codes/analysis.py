@@ -12,11 +12,11 @@ from struct_codes.sections import (
     DOUBLY_SYMMETRIC_I,
     HSS,
     PIPE,
+    AiscSectionGeometry,
     ConstructionType,
     LoadStrengthCalculation,
     RuleEd,
     SectionClassification,
-    SectionGeometry,
     SectionType,
     section_table,
 )
@@ -37,7 +37,7 @@ class Beam:
 
 @dataclass
 class BeamAnalysis:
-    geometry: SectionGeometry
+    geometry: AiscSectionGeometry
     material: Material
     construction: ConstructionType
     beam: Beam

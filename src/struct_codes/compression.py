@@ -147,3 +147,7 @@ class TorsionalBucklingDoublySymmetricStrengthCalculation(
             minor_axis_inertia=self.minor_axis_inertia,
             warping_constant=self.warping_constant,
         )
+   
+@dataclass     
+class Compression:
+    

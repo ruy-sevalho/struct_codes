@@ -28,6 +28,7 @@ from struct_codes.sections import (
     ConstructionType,
     LoadStrengthCalculation,
     RuleEd,
+    SectionGeometry,
     SectionType,
 )
 from struct_codes.units import Quantity
@@ -84,7 +85,7 @@ class DoublySymmetricIGeo:
 
 @dataclass
 class DoublySymmetricI:
-    geometry: DoublySymmetricIGeo
+    geometry: SectionGeometry
     material: Material
     construction: ConstructionType = ConstructionType.ROLLED
     connection: Connection | None = None

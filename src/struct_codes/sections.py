@@ -63,8 +63,92 @@ HSS = (SectionType.HSS,)
 PIPE = (SectionType.PIPE,)
 
 
+class SectionGeometry(Protocol):
+    T_F: Quantity
+    W: Quantity
+    A: Quantity
+    d: Quantity
+    ddet: Quantity
+    Ht: Quantity
+    h: Quantity
+    OD: Quantity
+    bf: Quantity
+    bfdet: Quantity
+    B: Quantity
+    b: Quantity
+    ID: Quantity
+    tw: Quantity
+    twdet: Quantity
+    twdet_2: Quantity
+    tf: Quantity
+    tfdet: Quantity
+    t: Quantity
+    tnom: Quantity
+    tdes: Quantity
+    kdes: Quantity
+    kdet: Quantity
+    k1: Quantity
+    x: Quantity
+    y: Quantity
+    eo: Quantity
+    xp: Quantity
+    yp: Quantity
+    bf_2tf: float
+    b_t: float
+    b_tdes: float
+    h_tw: float
+    h_tdes: float
+    D_t: float
+    Ix: Quantity
+    Zx: Quantity
+    Sx: Quantity
+    rx: Quantity
+    Iy: Quantity
+    Zy: Quantity
+    Sy: Quantity
+    ry: Quantity
+    Iz: Quantity
+    rz: Quantity
+    Sz: Quantity
+    J: Quantity
+    Cw: Quantity
+    C: Quantity
+    Wno: Quantity
+    Sw1: Quantity
+    Sw2: Quantity
+    Sw3: Quantity
+    Qf: Quantity
+    Qw: Quantity
+    ro: Quantity
+    H: float
+    tan_alpha: float
+    Iw: Quantity
+    zA: Quantity
+    zB: Quantity
+    zC: Quantity
+    wA: Quantity
+    wB: Quantity
+    wC: Quantity
+    SwA: Quantity
+    SwB: Quantity
+    SwC: Quantity
+    SzA: Quantity
+    SzB: Quantity
+    SzC: Quantity
+    rts: Quantity
+    ho: Quantity
+    PA: Quantity
+    PA2: Quantity
+    PB: Quantity
+    PC: Quantity
+    PD: Quantity
+    T: Quantity
+    WGi: Quantity
+    WGo: Quantity
+
+
 @dataclass(frozen=True)
-class SectionGeometry:
+class AiscSectionGeometry:
     """
     Type	Shape type: W, M, S, HP, C, MC, L, WT, MT, ST, 2L, HSS, PIPE
     EDI_ STD_ Nomenclature	The shape designation according to the AISC Naming Convention for Structural Steel Products
@@ -75,7 +159,7 @@ class SectionGeometry:
     W-shapes: a value of T for: tf > 2 in.\\
     M-shapes: a value of T indicates that the shape has sloped flanges.\\
     WT-shapes: a value of T for: tf > 2 in\\
-    MT-shapes: a value of T indicates that the shape has sloped flanges.
+    MT-shapes: a value of T indicates that the shape has sloped flanges.\\
     W	Nominal weight, lb/ft (kg/m)\\
     A	Cross-sectional area, in.2 (mm2)\\
     d	Overall depth of member, or width of shorter leg for angles, or width of the outstanding legs of long legs back-to-back double angles, or the width of the back-to-back legs of short legs back-to-back double angles, in. (mm)\\
