@@ -306,11 +306,3 @@ class LateralTorsionalBucklingCalculation2016(StrengthMixin):
             limiting_length_torsional_buckling=self.limiting_length_lateral_torsional_buckling,
         )
 
-    @property
-    def calculation_memory(self):
-        return LateralTorsionalBucklingCalculationMemory(
-            limiting_yield_length=self.limiting_yield_length,
-            limiting_buckling_length=self.limiting_length_lateral_torsional_buckling,
-            nominal_strength=self.nominal_strength,
-            design_strength=self.design_strength,
-        )

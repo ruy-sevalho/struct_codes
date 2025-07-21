@@ -1,34 +1,23 @@
-import math
 from abc import abstractmethod
 from dataclasses import dataclass
-
+import math
 from pint import Quantity
 
 from struct_codes.criteria import DesignType, StrengthMixin
-
-
-@dataclass
-class BeamCompressionParam:
-    length_major_axis: Quantity
-    factor_k_major_axis: float = 1.0
-    length_minor_axis: Quantity = None
-    factor_k_minor_axis: float = 1.0
-    length_torsion: Quantity = None
-    factor_k_torsion: float = 1.0
-
+from struct_codes.sections import Section
 
 def member_slenderness_ratio(
     factor_k: float, unbraced_length: Quantity, radius_of_gyration: Quantity
 ) -> float:
-    """"""
+    """E2. Effective length - aisc 360-16"""
     n = unbraced_length / radius_of_gyration
     return factor_k * n
 
 
-# E3. FLEXURAL BUCKLING OF MEMBERS WITHOUT SLENDER ELEMENTS (E3-1)
 def _nominal_compressive_strength(
     critical_stress: Quantity, sectional_area: Quantity
 ) -> Quantity:
+    """E3. FLEXURAL BUCKLING OF MEMBERS WITHOUT SLENDER ELEMENTS (E3-1) - aisc 360-16"""
     return critical_stress * sectional_area
 
 
@@ -38,6 +27,7 @@ def critical_compression_stress_buckling_default(
     elastic_buckling_stress: Quantity,
     # member_slenderness_limit: float,
 ) -> Quantity:
+    """E3-2 and E3-3 - aisc 360-16"""
     if yield_stress / elastic_buckling_stress <= 2.25:
         # (E3-2)
         ratio = yield_stress / elastic_buckling_stress
@@ -50,6 +40,7 @@ def critical_compression_stress_buckling_default(
 def elastic_flexural_buckling_stress(
     modulus_linear: Quantity, member_slenderness_ratio: float
 ) -> Quantity:
+    """E3-4 - aisc 360-16"""
     return math.pi**2 * modulus_linear / member_slenderness_ratio**2
 
 
@@ -128,7 +119,6 @@ class FlexuralBucklingStrengthCalculation(BucklingStrengthCalculationMixin):
         )
 
 
-
 @dataclass
 class TorsionalBucklingDoublySymmetricStrengthCalculation(
     BucklingStrengthCalculationMixin
@@ -157,3 +147,5 @@ class TorsionalBucklingDoublySymmetricStrengthCalculation(
             minor_axis_inertia=self.minor_axis_inertia,
             warping_constant=self.warping_constant,
         )
+   
+FlexuralBucklingStrengthCalculation()

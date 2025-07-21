@@ -1,9 +1,12 @@
-from abc import abstractmethod
-from dataclasses import dataclass
 import math
-from pint import Quantity
+from abc import abstractmethod
+from collections import defaultdict
+from dataclasses import dataclass
 
-from struct_codes.criteria import DesignType, StrengthMixin
+from struct_codes.beam import BeamElement
+from struct_codes.criteria import DesignType, StrengthMixin, StrengthType
+from struct_codes.sections import LoadStrengthCalculation, SectionClassification
+from struct_codes.units import Quantity
 
 
 def member_slenderness_ratio(
@@ -147,7 +150,107 @@ class TorsionalBucklingDoublySymmetricStrengthCalculation(
             minor_axis_inertia=self.minor_axis_inertia,
             warping_constant=self.warping_constant,
         )
-   
-@dataclass     
-class Compression:
-    
+
+
+table_criteria_list = {
+    SectionClassification.DOUBLY_SYMMETRIC_I: (
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS,
+        StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS,
+        StrengthType.TORSIONAL_BUCKLING,
+    ),
+    SectionClassification.SINGLY_SYMMETRIC_I: (
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS,
+        StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS,
+        StrengthType.TORSIONAL_BUCKLING,
+    ),
+    SectionClassification.CHANEL: (
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS,
+        StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS,
+        StrengthType.TORSIONAL_BUCKLING,
+    ),
+    SectionClassification.HSS: (
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS,
+        StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS,
+    ),
+    SectionClassification.PIPE: (
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS,
+        StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS,
+    ),
+    SectionClassification.ANGLE: (
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS,
+        StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS,
+    ),
+}
+
+
+def flexural_buckling_major_axis_default(model: BeamElement):
+    return (
+        FlexuralBucklingStrengthCalculation(
+            length=model.length_major_axis,
+            factor_k=model.factor_k_major_axis,
+            yield_stress=model.material.yield_strength,
+            modulus_linear=model.material.modulus_linear,
+            gross_area=model.geometry.A,
+            radius_of_gyration=model.geometry.rx,
+            design_type=model.design_type,
+        ),
+    )
+
+
+def flexural_buckling_minor_axis_default(model: BeamElement):
+    return (
+        FlexuralBucklingStrengthCalculation(
+            length=model.length_minor_axis,
+            factor_k=model.factor_k_minor_axis,
+            yield_stress=model.material.yield_strength,
+            modulus_linear=model.material.modulus_linear,
+            gross_area=model.geometry.A,
+            radius_of_gyration=model.geometry.ry,
+            design_type=model.design_type,
+        ),
+    )
+
+
+def torsional_buckling_doubly_symmtric_i(model: BeamElement):
+    return TorsionalBucklingDoublySymmetricStrengthCalculation(
+        yield_stress=model.material.yield_strength,
+        gross_area=model.geometry.A,
+        length=model.length_torsion,
+        factor_k=model.factor_k_torsion,
+        modulus_linear=model.material.modulus_linear,
+        modulus_shear=model.material.modulus_shear,
+        major_axis_inertia=model.geometry.Ix,
+        minor_axis_inertia=model.geometry.Iy,
+        torsional_constant=model.geometry.J,
+        warping_constant=model.geometry.Cw,
+    )
+
+
+flexural_buckling_major_axis_table = defaultdict(
+    lambda _: flexural_buckling_major_axis_default
+)
+flexural_buckling_minor_axis_table = defaultdict(
+    lambda _: flexural_buckling_minor_axis_default
+)
+torsional_buckling_table = {
+    SectionClassification.DOUBLY_SYMMETRIC_I: torsional_buckling_doubly_symmtric_i,
+}
+table_criteria_per_section_type = {
+    StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS: flexural_buckling_major_axis_table,
+    StrengthType.FLEXURAL_BUCKLING_MINOR_AXIS: flexural_buckling_minor_axis_table,
+    StrengthType.TORSIONAL_BUCKLING: torsional_buckling_table,
+}
+
+
+def compreesion(model: BeamElement):
+    criteria_list = table_criteria_list[model.section_type]
+    criteria_dict = dict()
+    for criteria in criteria_list:
+        criteria_dict.update(
+            {
+                criteria: table_criteria_per_section_type[criteria][model.section_type](
+                    model
+                )
+            }
+        )
+    return LoadStrengthCalculation(criteria=criteria_dict)

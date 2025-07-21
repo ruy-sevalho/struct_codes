@@ -3,6 +3,7 @@ from enum import Enum, StrEnum, auto
 from typing import Protocol
 
 from struct_codes.criteria import StrengthMixin, StrengthType
+from struct_codes.materials import Material
 from struct_codes.units import Quantity
 
 
@@ -378,45 +379,47 @@ class Connection(Protocol):
     def shear_lag_factor(self) -> float: ...
 
 
-# class Section(Protocol):
-#     geometry: SectionGeometry
-#     material: Material
-#     construction: ConstructionType
+@dataclass
+class Section(Protocol):
+    geometry: SectionGeometry
+    material: Material
+    construction: ConstructionType
+    section_type: SectionClassification
 
-#     @abstractmethod
-#     def compression(
-#         self,
-#         length_major_axis: Quantity,
-#         factor_k_major_axis: float = 1.0,
-#         length_minor_axis: Quantity = None,
-#         factor_k_minor_axis: float = 1.0,
-#         length_torsion: Quantity = None,
-#         factor_k_torsion: float = 1.0,
-#         design_type: DesignType = DesignType.ASD,
-#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-#     ) -> LoadStrengthCalculation: ...
+    # @abstractmethod
+    # def compression(
+    #     self,
+    #     length_major_axis: Quantity,
+    #     factor_k_major_axis: float = 1.0,
+    #     length_minor_axis: Quantity = None,
+    #     factor_k_minor_axis: float = 1.0,
+    #     length_torsion: Quantity = None,
+    #     factor_k_torsion: float = 1.0,
+    #     design_type: DesignType = DesignType.ASD,
+    #     rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    # ) -> LoadStrengthCalculation: ...
 
-#     @abstractmethod
-#     def flexure_major_axis(
-#         length: Quantity,
-#         design_type: DesignType = DesignType.ASD,
-#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-#     ) -> LoadStrengthCalculation: ...
+    # @abstractmethod
+    # def flexure_major_axis(
+    #     length: Quantity,
+    #     design_type: DesignType = DesignType.ASD,
+    #     rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    # ) -> LoadStrengthCalculation: ...
 
-#     @abstractmethod
-#     def flexure_minor_axis(
-#         design_type: DesignType = DesignType.ASD,
-#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-#     ) -> LoadStrengthCalculation: ...
+    # @abstractmethod
+    # def flexure_minor_axis(
+    #     design_type: DesignType = DesignType.ASD,
+    #     rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    # ) -> LoadStrengthCalculation: ...
 
-#     @abstractmethod
-#     def shear_major_axis(
-#         design_type: DesignType = DesignType.ASD,
-#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-#     ) -> LoadStrengthCalculation: ...
+    # @abstractmethod
+    # def shear_major_axis(
+    #     design_type: DesignType = DesignType.ASD,
+    #     rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    # ) -> LoadStrengthCalculation: ...
 
-#     @abstractmethod
-#     def shear_minor_axis(
-#         design_type: DesignType = DesignType.ASD,
-#         rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
-#     ) -> LoadStrengthCalculation: ...
+    # @abstractmethod
+    # def shear_minor_axis(
+    #     design_type: DesignType = DesignType.ASD,
+    #     rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+    # ) -> LoadStrengthCalculation: ...

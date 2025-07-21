@@ -280,7 +280,7 @@ def convert_inputs(df: pd.DataFrame):
 
 
 aisc_sections_16ed = read_csv_table(DATABASE_PATH_16ed)
-aisc_sections_15ed = read_csv_table(DATABASE_PATH_15ed)
+AISC_SECTIONS_15ED = read_csv_table(DATABASE_PATH_15ed)
 
 section_table = {SectionType.W: DoublySymmetricI}
 
@@ -288,7 +288,7 @@ section_table = {SectionType.W: DoublySymmetricI}
 def create_aisc_section(
     section_name: str, material: Material, construction: ConstructionType
 ):
-    section_dict = aisc_sections_15ed[section_name]
+    section_dict = AISC_SECTIONS_15ED[section_name]
     section_type = section_dict["type"]
     section_class = section_table[section_type]
     return section_class(
@@ -296,3 +296,6 @@ def create_aisc_section(
         material=material,
         construction=construction,
     )
+
+
+    
