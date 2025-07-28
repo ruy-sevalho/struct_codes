@@ -4,9 +4,11 @@ from enum import Enum
 
 from pint import Quantity
 
+
 @dataclass
-class NotAplicable: 
+class NotAplicable:
     message: str = ""
+
 
 class StrengthType(str, Enum):
     WEB_SHEAR = "web_shear"
@@ -38,7 +40,7 @@ def calculate_design_strength(
     return calc_function[design_type](nominal_strength, factor)
 
 
-class StrengthMixin(ABC):
+class Strength(ABC):
     design_type: DesignType
 
     asd_factor = 1.67

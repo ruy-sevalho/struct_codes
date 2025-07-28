@@ -7,7 +7,13 @@ import pandas as pd
 
 from struct_codes.i_section import DoublySymmetricI, DoublySymmetricIGeo
 from struct_codes.materials import Material
-from struct_codes.sections import AiscSectionGeometry, ConstructionType, SectionType
+from struct_codes.sections import (
+    AiscSectionGeometry,
+    ConstructionType,
+    RuleEd,
+    SectionType,
+    section_table,
+)
 from struct_codes.units import Quantity, kilogram, meter, millimeter
 
 DATABASE_PATH_16ed = Path(__file__).parent / Path("aisc-shapes-database-v16.0.csv")
@@ -279,10 +285,10 @@ def convert_inputs(df: pd.DataFrame):
     }
 
 
-aisc_sections_16ed = read_csv_table(DATABASE_PATH_16ed)
+AISC_SECTIONS_16ED = read_csv_table(DATABASE_PATH_16ed)
 AISC_SECTIONS_15ED = read_csv_table(DATABASE_PATH_15ed)
 
-section_table = {SectionType.W: DoublySymmetricI}
+section_table_old = {SectionType.W: DoublySymmetricI}
 
 
 def create_aisc_section(
@@ -290,7 +296,7 @@ def create_aisc_section(
 ):
     section_dict = AISC_SECTIONS_15ED[section_name]
     section_type = section_dict["type"]
-    section_class = section_table[section_type]
+    section_class = section_table_old[section_type]
     return section_class(
         geometry=AiscSectionGeometry(**section_dict),
         material=material,
@@ -298,4 +304,8 @@ def create_aisc_section(
     )
 
 
-    
+def get_aisc_section_geo_and_type(name: str, ed: RuleEd = RuleEd.ED15):
+    section = {RuleEd.ED15: AISC_SECTIONS_15ED, RuleEd.ED16: AISC_SECTIONS_16ED}[ed][
+        name
+    ]
+    return AiscSectionGeometry(**section), section_table[section["type"]]

@@ -1,8 +1,10 @@
+from pytest import mark
 from unit_processing import compare_quantites
 
-from struct_codes.aisc_database import AISC_SECTIONS_15ED
+from struct_codes.aisc_database import AISC_SECTIONS_15ED, get_aisc_section_geo_and_type
 from struct_codes.analysis import Analysis
-from struct_codes.criteria import DesignType
+from struct_codes.beam import Beam
+from struct_codes.criteria import DesignType, StrengthType
 from struct_codes.materials import Material, steel355MPa
 from struct_codes.sections import (
     ConstructionType,
@@ -18,28 +20,27 @@ from struct_codes.units import Quantity, meter, newton
     section_type, 
     material, 
     construction, 
-    length_major_axis,
+    beam,
     design_type, 
     expected_design_strength
     """,
     [
         (
-            AISC_SECTIONS_15ED["W6X15"],
-            AISC_SECTIONS_15ED["W6X15"]["type"],
+            *get_aisc_section_geo_and_type("W6X15"),
             steel355MPa,
             ConstructionType.ROLLED,
-            1 * meter,
+            Beam(1 * meter),
             DesignType.ASD,
             597228.27 * newton,
         ),
     ],
 )
-def test_w_section_flexural_buckling_major_axis_calc_memory_2016(
+def test_flexural_buckling_major_axis_15ed(
     section_geo: SectionGeometry,
     section_type: SectionClassification,
     material: Material,
     construction: ConstructionType,
-    length_major_axis: Quantity,
+    beam: Beam,
     design_type: DesignType,
     expected_design_strength: Quantity,
 ):
@@ -48,13 +49,11 @@ def test_w_section_flexural_buckling_major_axis_calc_memory_2016(
         section_type=section_type,
         material=material,
         construction=construction,
-        length_major_axis=length_major_axis,
+        beam=beam,
         design_type=design_type,
     )
 
-    ds = (
-        section.compression(**beam, design_type=design_type)
-        .criteria[StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS]
-        .design_strength
-    )
+    ds = analysis.compression.criteria[
+        StrengthType.FLEXURAL_BUCKLING_MAJOR_AXIS
+    ].design_strength
     compare_quantites(ds, expected_design_strength)

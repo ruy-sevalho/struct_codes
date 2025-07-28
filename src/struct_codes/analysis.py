@@ -1,22 +1,22 @@
-from abc import abstractmethod
-from calendar import c
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Callable, Iterable, Protocol
 
-from struct_codes.aisc_database import AISC_SECTIONS_15ED
-from struct_codes.beam import Beam, BeamElement
-from struct_codes.compression import compreesion
+from struct_codes.beam import Beam
+from struct_codes.compression import compression_criteria_table
+from struct_codes.criteria import DesignType, Strength, StrengthType
 from struct_codes.materials import Material
 from struct_codes.sections import (
-    AiscSectionGeometry,
+    Connection,
     ConstructionType,
     LoadStrengthCalculation,
     SectionClassification,
+    SectionGeometry,
 )
 from struct_codes.units import Quantity
 
 
-class BeamAnalyisGeneral(Protocol):
+class BeamAnalyisGeneral(ABC):
     @abstractmethod
     def compression(self, load: Quantity) -> LoadStrengthCalculation: ...
 
@@ -55,10 +55,49 @@ class BeamAnalysisPipe(Protocol):
 
 
 @dataclass
-class Analysis(BeamElement):
-    def compression(self):
-        return compreesion(self)
+class AnalysisInput:
+    geometry: SectionGeometry
+    section_type: SectionClassification
+    material: Material
+    construction: ConstructionType
+    beam: Beam
+    design_type: DesignType
+    connection: Connection = None
+    
+
+
+    # @property
+    # def compression(self):
+    #     return load_check(self, compression_criteria_table)
+    
+    @abstractmethod
+    def compression(self) -> LoadStrengthCalculation:
+        ...
+
+
+
+
+# def load_check(
+#     model: Analysis,
+#     criteria_per_section_table: dict[
+#         SectionClassification,
+#         Iterable[
+#             tuple[
+#                 StrengthType,
+#                 Callable[
+#                     [
+#                         Analysis,
+#                     ],
+#                     Strength,
+#                 ],
+#             ]
+#         ],
+#     ],
+# ):
+#     criteria_list = criteria_per_section_table[model.section_type]
+#     criteria_dict = {name: criteria(model) for name, criteria in criteria_list}
+#     return LoadStrengthCalculation(criteria=criteria_dict)
 
 
 if __name__ == "__main__":
-    pass
+    # Analysis()

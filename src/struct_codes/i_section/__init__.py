@@ -99,7 +99,7 @@ class DoublySymmetricI:
         length_torsion: Quantity = None,
         factor_k_torsion: float = 1.0,
         design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+        rule_editon: RuleEd = RuleEd.ED15,
     ):
         compression = LoadStrengthCalculation(
             criteria={
@@ -202,7 +202,7 @@ class DoublySymmetricI:
     def tension(
         self,
         design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+        rule_editon: RuleEd = RuleEd.ED15,
     ) -> LoadStrengthCalculation:
         return self._tension_2016(design_type=design_type)
 
@@ -211,7 +211,7 @@ class DoublySymmetricI:
         length: Quantity = None,
         lateral_torsional_buckling_modification_factor: float = 1.0,
         design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+        rule_editon: RuleEd = RuleEd.ED15,
     ) -> LoadStrengthCalculation:
         return LoadStrengthCalculation(
             criteria={
@@ -241,7 +241,7 @@ class DoublySymmetricI:
     def flexure_minor_axis(
         self,
         design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+        rule_editon: RuleEd = RuleEd.ED15,
     ):
         return LoadStrengthCalculation(
             {
@@ -257,7 +257,7 @@ class DoublySymmetricI:
     def shear_major_axis(
         self,
         design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+        rule_editon: RuleEd = RuleEd.ED15,
     ):
         return LoadStrengthCalculation(
             criteria={
@@ -275,7 +275,7 @@ class DoublySymmetricI:
     def shear_minor_axis(
         self,
         design_type: DesignType = DesignType.ASD,
-        rule_editon: RuleEd = RuleEd.TWENTY_SIXTEEN,
+        rule_editon: RuleEd = RuleEd.ED15,
     ):
         return LoadStrengthCalculation(
             criteria={

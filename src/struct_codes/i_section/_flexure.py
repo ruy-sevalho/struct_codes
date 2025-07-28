@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from pint import Quantity
 
-from struct_codes.criteria import DesignType, StrengthMixin
+from struct_codes.criteria import DesignType, Strength
 
 
 # ed15 360-2016 - F2-1
@@ -133,7 +133,7 @@ def flexural_lateral_torsional_buckling_strength(
 
 
 @dataclass
-class YieldingMomentCalculation16(StrengthMixin):
+class YieldingMomentCalculation16(Strength):
     """AISC 360 2016 F2.1"""
 
     plastic_section_modulus: Quantity
@@ -149,7 +149,7 @@ class YieldingMomentCalculation16(StrengthMixin):
 
 
 @dataclass
-class MinorAxisYieldingCalculation2016(StrengthMixin):
+class MinorAxisYieldingCalculation2016(Strength):
     yield_stress: Quantity
     plastic_section_modulus: Quantity
     elastic_section_modulus: Quantity
@@ -211,7 +211,7 @@ class LateralTorsionalBucklingSectionParam2016:
 
 
 @dataclass
-class LateralTorsionalBucklingCalculation2016(StrengthMixin):
+class LateralTorsionalBucklingCalculation2016(Strength):
     length: Quantity
     modulus: Quantity
     yield_stress: Quantity
@@ -305,4 +305,3 @@ class LateralTorsionalBucklingCalculation2016(StrengthMixin):
             limiting_length_yield=self.limiting_yield_length,
             limiting_length_torsional_buckling=self.limiting_length_lateral_torsional_buckling,
         )
-

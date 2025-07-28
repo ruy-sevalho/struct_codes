@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from pint import Quantity
 
-from struct_codes.criteria import DesignType, StrengthMixin
+from struct_codes.criteria import DesignType, Strength
 from struct_codes.sections import ConstructionType
 
 
@@ -62,7 +62,7 @@ def web_shear_coefficient_2(
 
 
 @dataclass
-class WebShearCalculation2016(StrengthMixin):
+class WebShearCalculation2016(Strength):
     yield_stress: Quantity
     modulus: Quantity
     web_area: Quantity
@@ -118,13 +118,13 @@ class WebShearCalculation2016(StrengthMixin):
 
 
 @dataclass
-class ShearMinorAxis(StrengthMixin):
+class ShearMinorAxis(Strength):
     yield_stress: Quantity
     modulus: Quantity
     flange_width: Quantity
     flange_thickness: Quantity
     design_type: DesignType = DesignType.ASD
-    
+
     plate_shear_buckling_coefficient = 1.2
 
     @property
@@ -157,13 +157,13 @@ class ShearMinorAxis(StrengthMixin):
                 shear_buckling_coefficient=self.plate_shear_buckling_coefficient,
                 modulus_linear=self.modulus,
                 yield_stress=self.yield_stress,
-                web_ratio=self.flange_ratio
+                web_ratio=self.flange_ratio,
             )
         return web_shear_coefficient_2(
             shear_buckling_coefficient=self.plate_shear_buckling_coefficient,
-                modulus_linear=self.modulus,
-                yield_stress=self.yield_stress,
-                web_ratio=self.flange_ratio
+            modulus_linear=self.modulus,
+            yield_stress=self.yield_stress,
+            web_ratio=self.flange_ratio,
         )
 
     @property

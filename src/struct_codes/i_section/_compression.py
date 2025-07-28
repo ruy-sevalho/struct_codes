@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from pint import Quantity
 
-from struct_codes.criteria import DesignType, StrengthMixin
+from struct_codes.criteria import DesignType, Strength
 
 
 @dataclass
@@ -78,7 +78,7 @@ def doubly_symmetric_i_warping_constant(
 
 
 @dataclass
-class BucklingStrengthCalculationMixin(StrengthMixin):
+class BucklingStrengthCalculationMixin(Strength):
     yield_stress: Quantity
     gross_area: Quantity
 
@@ -126,7 +126,6 @@ class FlexuralBucklingStrengthCalculation(BucklingStrengthCalculationMixin):
             modulus_linear=self.modulus_linear,
             member_slenderness_ratio=self.beam_slenderness,
         )
-
 
 
 @dataclass

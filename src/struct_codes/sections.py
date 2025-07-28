@@ -2,13 +2,14 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 from typing import Protocol
 
-from struct_codes.criteria import StrengthMixin, StrengthType
+from struct_codes.criteria import Strength, StrengthType
 from struct_codes.materials import Material
 from struct_codes.units import Quantity
 
 
 class RuleEd(str, Enum):
-    TWENTY_SIXTEEN = "2016"
+    ED15 = auto()
+    ED16 = auto()
 
 
 class SectionType(str, Enum):
@@ -332,7 +333,7 @@ class AiscSectionGeometry:
 
 
 def _get_min_design_strength(
-    criteria: dict[StrengthType, StrengthMixin],
+    criteria: dict[StrengthType, Strength],
 ) -> tuple[Quantity, StrengthType]:
     d = {key: value.design_strength for key, value in criteria.items()}
     key = min(d, key=d.get)
@@ -341,7 +342,7 @@ def _get_min_design_strength(
 
 @dataclass
 class LoadStrengthCalculation:
-    criteria: dict[StrengthType, StrengthMixin]
+    criteria: dict[StrengthType, Strength]
 
     @property
     def design_strength_tuple(self):
@@ -356,7 +357,7 @@ class LoadStrengthCalculation:
         return self.design_strength_tuple[1]
 
     @property
-    def design_strength_calculation(self) -> StrengthMixin:
+    def design_strength_calculation(self) -> Strength:
         return self.criteria[self.design_strength_criterion]
 
     @property
@@ -377,6 +378,17 @@ class Connection(Protocol):
 
     @property
     def shear_lag_factor(self) -> float: ...
+
+
+@dataclass
+class Beam:
+    length_major_axis: Quantity = None
+    factor_k_major_axis: float = 1.0
+    length_minor_axis: Quantity = None
+    factor_k_minor_axis: float = 1.0
+    length_torsion: Quantity = None
+    factor_k_torsion: float = 1.0
+    length_bracing_lateral_torsional_buckling: Quantity = None
 
 
 @dataclass
