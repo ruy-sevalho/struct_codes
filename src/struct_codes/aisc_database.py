@@ -154,8 +154,8 @@ def process_aisc_database_v160_row(section: dict[str, Any]):
 
 
 def read_csv_table(file_path: Path):
-    with open(file_path, "r") as f:
-        df = pd.read_csv(f, na_values="–")
+    with open(file_path, "r", encoding="utf-8") as f:
+        df = pd.read_csv(f, na_values="–", encoding="utf-8", encoding_errors="replace")
 
     # dropping values in Imperial units
 
