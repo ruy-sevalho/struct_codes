@@ -63,18 +63,13 @@ class AnalysisInput:
     beam: Beam
     design_type: DesignType
     connection: Connection = None
-    
-
 
     # @property
     # def compression(self):
     #     return load_check(self, compression_criteria_table)
-    
+
     @abstractmethod
-    def compression(self) -> LoadStrengthCalculation:
-        ...
-
-
+    def compression(self) -> LoadStrengthCalculation: ...
 
 
 # def load_check(
@@ -101,3 +96,4 @@ class AnalysisInput:
 
 if __name__ == "__main__":
     # Analysis()
+    pass
